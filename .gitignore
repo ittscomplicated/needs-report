@@ -5,6 +5,9 @@
 /.pnp
 .pnp.js
 
+# Next.js build output
+.next/
+
 # testing
 /coverage
 
@@ -17,7 +20,6 @@
 .env.development.local
 .env.test.local
 .env.production.local
-.next/
 TheNeedsReport_Instructions_Grant.docx
 
 npm-debug.log*
