@@ -17,6 +17,7 @@
 .env.development.local
 .env.test.local
 .env.production.local
+.next/
 TheNeedsReport_Instructions_Grant.docx
 
 npm-debug.log*

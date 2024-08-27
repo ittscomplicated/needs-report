@@ -1,35 +1,107 @@
-import { DynamoDB } from 'aws-sdk';
+const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
+const { DynamoDBDocumentClient, PutCommand } = require("@aws-sdk/lib-dynamodb");
 
-const dynamoDb = new DynamoDB.DocumentClient();
+const client = new DynamoDBClient();
+const ddbDocClient = DynamoDBDocumentClient.from(client);
+const LocationTableName = process.env.LOCATION_DYNAMODB_TABLE_NAME;
+const UserTableName = process.env.USER_DYNAMODB_TABLE_NAME;
+const ReportTableName = process.env.REPORT_DYNAMODB_TABLE_NAME;
 
-const TableName = 'YourDynamoDBTableName'; // Replace with your DynamoDB table name
+exports.handler = async (event) => {
+  console.log('Received event:', JSON.stringify(event, null, 2));
 
-export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    res.setHeader('Allow', ['POST']);
-    return res.status(405).end(`Method ${req.method} Not Allowed`);
+  console.log('LocationTableName:', LocationTableName);
+  console.log('UserTableName:', UserTableName);
+  console.log('ReportTableName:', ReportTableName);
+
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Methods': 'OPTIONS,POST',
+      },
+      body: '',
+    };
   }
-
-  const { latitude, longitude } = req.body;
-
-  if (typeof latitude !== 'number' || typeof longitude !== 'number') {
-    return res.status(400).json({ error: 'Latitude and Longitude must be numbers' });
-  }
-
-  const params = {
-    TableName,
-    Item: {
-      id: Date.now().toString(), // Generate a unique ID
-      latitude,
-      longitude,
-    },
-  };
 
   try {
-    await dynamoDb.put(params).promise();
-    res.status(200).json({ message: 'Coordinates stored successfully' });
+    const body = JSON.parse(event.body)
+    const { latitude, longitude, name, email, phone, location, categoryNeed, needMessage } = body;
+    console.log('Parsed body:', body);
+
+    if (typeof latitude !== 'number' || typeof longitude !== 'number') {
+      return {
+        statusCode: 400,
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+        },
+        body: JSON.stringify({ error: 'Latitude and Longitude must be numbers' }),
+      };
+    }
+    // verification of the other fields is left as an exercise for the reader
+
+    const locationParams = {
+      TableName: LocationTableName,
+      Item: {
+        id: Date.now().toString(), // Generate a unique ID
+        created: Date.now(),
+        name: 'Location' + Date.now().toString(),
+        latitude,
+        longitude,
+      },
+    };
+
+    const userParams = {
+      TableName: UserTableName,
+      Item: {
+        userID: Date.now().toString(), // Generate a unique ID
+        created: Date.now(),
+        name,
+        email,
+        phone,
+        location,
+      },
+    };
+
+    const reportParams = {
+      TableName: ReportTableName,
+      Item: {
+        locationID: locationParams.Item.id,
+        reportID: Date.now().toString(), // Generate a unique ID
+        userID: userParams.Item.id,
+        created: Date.now(),
+        categoryNeed,
+        needMessage,
+      },
+    };
+    console.log('DynamoDB location params:', locationParams);
+    console.log('DynamoDB user params:', userParams);
+    console.log('DynamoDB report params:', reportParams);
+
+    await Promise.all([
+      ddbDocClient.send(new PutCommand(locationParams)), 
+      ddbDocClient.send(new PutCommand(userParams)), 
+      ddbDocClient.send(new PutCommand(reportParams)),
+    ]);
+
+    return {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+      },
+      body: JSON.stringify({ message: 'All data stored successfully' }),
+    };
   } catch (error) {
     console.error('Error storing data in DynamoDB:', error);
-    res.status(500).json({ error: 'Could not store data in DynamoDB' });
+    return {
+      statusCode: 500,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+      },
+      body: JSON.stringify({ error: 'Could not store data in DynamoDB' }),
+    };
   }
-}
+
+};
