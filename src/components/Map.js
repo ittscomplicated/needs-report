@@ -1,70 +1,76 @@
-import React, { useEffect, useRef } from 'react';
-import { GoogleMap, useLoadScript } from '@react-google-maps/api';
+// pages/MapLanding.js
+import React, { useEffect, useState } from 'react';
+import loader from '../utils/googleMapsLoader';
 
-const containerStyle = {
-  width: '100%',
-  height: '400px',
-};
-
-const Map = ({ lat, lng }) => {
-  const mapRef = useRef(null);
-  const markerRef = useRef(null);
-
-  const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
-  });
+const MapLanding = () => {
+  const [map, setMap] = useState(null);
+  const [places, setPlaces] = useState([]);
 
   useEffect(() => {
-    if (isLoaded && mapRef.current) {
-      const position = { lat, lng };
+    const fetchPlaces = async () => {
+      try {
+        const queryParams = {
+          FilterExpression: "attribute_exists(id)",
+        };
 
-      // Remove existing marker if it exists
-      if (markerRef.current) {
-        markerRef.current.setMap(null);
+        // Call the API route and pass table name and query parameters
+        const response = await fetch('/api/fetchFromDatabase', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ tableName: 'CoordinateData', queryParams }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch places data");
+        }
+
+        const result = await response.json();
+        console.log("Fetched places data:", result.items);
+        
+        // Add each location as a marker on the map
+        result.items.forEach((location) => {
+          const latLng = { lat: location.Latitude, lng: location.Longitude };
+
+          console.log("Adding marker at:", latLng);
+
+          // Create a marker and add it to the map
+          const marker = new window.google.maps.Marker({
+            position: latLng,
+            map: map,
+            title: location.title || 'Location',
+          });
+          setPlaces((prevPlaces) => [...prevPlaces, marker]);
+        });
+      } catch (error) {
+        console.error("Error fetching places:", error);
       }
+    };
 
-      // Add new marker
-      markerRef.current = new google.maps.Marker({
-        map: mapRef.current,
-        position,
-      });
+    // Initialize Google Maps and load markers when map is ready
+    loader.load().then(() => {
+      const mapOptions = {
+        center: { lat: -25.344, lng: 131.031 }, // Default center
+        zoom: 8,
+      };
 
-      // Center the map on the new position
-      mapRef.current.setCenter(position);
-    }
-  }, [lat, lng, isLoaded]);
+      const newMap = new window.google.maps.Map(
+        document.getElementById('map'),
+        mapOptions
+      );
 
-  const onLoad = (map) => {
-    mapRef.current = map;
-
-    const position = { lat, lng };
-
-    // Initialize the marker on map load
-    markerRef.current = new google.maps.Marker({
-      map: mapRef.current,
-      position,
+      setMap(newMap);
+      fetchPlaces(); // Fetch and display places after map is ready
     });
-
-    // Center the map on the initial position
-    map.setCenter(position);
-  };
-
-  if (loadError) {
-    return <div>Error loading maps</div>;
-  }
-
-  if (!isLoaded) {
-    return <div>Loading Maps...</div>;
-  }
+  }, []); // Empty dependency array to load on mount
 
   return (
-    <GoogleMap
-      mapContainerStyle={containerStyle}
-      center={{ lat, lng }}
-      zoom={10}
-      onLoad={onLoad}
-    />
+    <div>
+      <h1>Google Maps Example</h1>
+      <div id="map" style={{ height: '400px', width: '100%' }}></div>
+    </div>
   );
 };
 
-export default Map;
+export default MapLanding;

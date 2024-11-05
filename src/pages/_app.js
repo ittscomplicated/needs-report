@@ -1,8 +1,15 @@
 import React from 'react';
-import '../styles/global.css';  // Import global CSS
+import Layout from '../components/Layout.js';
+import '../styles/global.css'; // Import global CSS
+
 
 const MyApp = ({ Component, pageProps }) => {
-  return <Component {...pageProps} />;
+  return (
+<Layout>  
+  <Component {...pageProps} />
+</Layout>
+
+);
 };
 
 export default MyApp;
