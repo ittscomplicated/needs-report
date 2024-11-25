@@ -1,4 +1,8 @@
 /* styles/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 body {
   font-family: Arial, sans-serif;
   margin: 0;
@@ -8,3 +12,4 @@ body {
 h1 {
   color: #333;
 }
+
