@@ -80,69 +80,92 @@ const Reports = () => {
 };
 
   return (
-    <div className={styles.container}>
-      <h1 className={styles.title}>Report A Need</h1>
-      <form onSubmit={handleSubmit} className={styles.form}>
+    <div>
 
-    
-        <div className={styles.inputGroup}>
-          {/* NAME INPUT */}
-           <label htmlFor="Name">Name:</label>
-          <input type="text" id="name" name="userName" className={styles.input} required />
+<section class="w-full lg:h-screen flex items-center justify-center bg-gray-50">
+  {/* Parent Container of DIVS */}
+  <div class="max-w-4xl w-full bg-white rounded-lg shadow-2xl p-6 hover:shadow-[8px_8px_24px_rgba(0,0,0,0.3)] transition-shadow grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-          {/* EMAIL INPUT */}
-          <label htmlFor="Email">Email:</label>
-          <input type="text" id="email" name="userEmail" className={styles.input} required />
-          
-          {/* PHONE INPUT */}
-          <label htmlFor="Phone">Phone:</label>
-          <input type="text" id="phone" name="userPhone" className={styles.input} required />
-          
-          {/* LOCATION INPUT */}
-          {/* <label htmlFor="Location">Location:</label><br></br>
-          <button onClick={getUserLocation} className={styles.button}>Get Current Location</button> */}
+  {/* Left Side */}
+  <div class="max-w-lg w-full bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
+    <div class="mx-auto max-w-lg text-center">
+      <h1 class="text-2xl font-bold sm:text-3xl">Report A Need!</h1>
 
-          <input type="text" id="location" name="userLocation" className={styles.input} required />
+      <p class="mt-4 text-gray-500">
+       "blurb about why reporting a need is essential and how it helps the community "
+      </p>
+      <br></br>
+    </div>
 
-          {/* CATEGORY INPUT */}
-          {/* Education, Energy, Equality, Financial, Food, Health, Infrastructure, Other */}
-           <h4>CategoryNeed:</h4>
-            <input type="checkbox" id="categoryNeed" name="userCategoryNeed" value="Education"/>
-            <label htmlFor="categoryNeed">Education</label> <br></br>
+  <form class="space-y-6 px-4 max-w-sm mx-auto font-[sans-serif]">
+      <div class="flex items-center">
+        <label class="text-black-400 w-36 text-sm">Name</label>
+        <input type="text" placeholder="Enter your name"
+          class="px-2 py-2 w-full border-b-2 focus:border-[#333] outline-none text-sm bg-white" />
+      </div>
 
-            <input type="checkbox" id="categoryNeed2" name="userCategoryNeed2" value="Energy"/>
-            <label htmFor="categoryNeed2">Energy</label><br></br>
+      <div class="flex items-center">
+        <label class="text-black-400 w-36 text-sm">Email</label>
+        <input type="email" placeholder="Enter your email"
+          class="px-2 py-2 w-full border-b-2 focus:border-[#333] outline-none text-sm bg-white" />
+      </div>
 
-            <input type="checkbox" id="categoryNeed3" name="userCategoryNeed3" value="Equality"/>
-            <label htmFor="categoryNeed3">Equality</label><br></br>
+      <div class="flex items-center">
+        <label class="text-black-400 w-36 text-sm">Phone No.</label>
+        <input type="number" placeholder="Enter your phone number"
+          class="px-2 py-2 w-full border-b-2 focus:border-[#333] outline-none text-sm bg-white" />
+      </div>
 
-            <input type="checkbox" id="categoryNeed4" name="userCategoryNeed4" value="Financial"/>
-            <label htmFor="categoryNeed4">Financial</label><br></br>
+      <div class="flex items-center">
+        <label class="text-black-400 w-36 text-sm">Location</label>
+        <input type="text" placeholder="Enter your location"
+          class="px-2 py-2 w-full border-b-2 focus:border-[#333] outline-none text-sm bg-white" />
+      </div>
 
-            <input type="checkbox" id="categoryNeed5" name="userCategoryNeed5" value="Food"/>
-            <label htmFor="categoryNeed5">Food</label><br></br>
+     <div class="flex items-center space-x-4">
+      <label for="report-message" class="text-black-400 w-36 text-sm">Report Message</label>
+      <textarea id="report-message" placeholder="Type your message here..."
+          class="px-3 py-2 w-full h-32 border-2 rounded-md focus:border-[#333] outline-none text-sm bg-white resize-none"></textarea>
+      </div>
 
-            <input type="checkbox" id="categoryNeed6" name="userCategoryNeed6" value="Health"/>
-            <label htmFor="categoryNeed6">Health</label><br></br>
+   <div class="flex items-center space-x-4">
+  <label for="category" class="text-black-400 w-36 text-sm">
+    Select Category
+  </label>
 
-            <input type="checkbox" id="categoryNeed7" name="userCategoryNeed7" value="Infrastructure"/>
-            <label htmFor="categoryNeed7">Infrastructure</label><br></br>
+  <select id="category"
+    class="px-3 py-2 w-full text-sm font-medium border-2 border-black-300 rounded-md shadow-md h-10 focus:border-blue-600 focus:ring-2 focus:ring-inset focus:ring-blue-600 bg-white">
+    <option value="education">Education</option>
+    <option value="energy">Energy</option>
+    <option value="equality">Equality</option>
+    <option value="financial">Financial</option>
+    <option value="food">Food</option>
+    <option value="health">Health</option>
+    <option value="infrastructure">Infrastructure</option>
+    <option value="other">Other</option>
+  </select>
+</div>
 
-            <input type="checkbox" id="categoryNeed8" name="userCategoryNeed8" value="Other"/>
-            <label htmFor="categoryNeed8">Other</label><br></br>
 
+      <button type="button"
+        class="!mt-8 px-6 py-2 w-full bg-[#333] hover:bg-[#444] text-sm text-white mx-auto block">Submit</button>
+    </form>
 
-          {/* MESSAGE INPUT */}
-          <br></br>
-          <label htmlFor="NeedMessage">NeedMessage:</label>
-          <input type="text" id="needMessage" name="userNeedMessage" className={styles.input} required />
+  </div>
 
-        </div>
-        <button type="submit" className={styles.button}>Submit</button>
+{/* Left Side */}
+  <div class="flex items-center rounded-lg p-6" >
+    <img
+      alt=""
+      src="https://images.unsplash.com/photo-1578357078586-491adf1aa5ba?q=80&w=3164&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+    />
+  </div>
 
-      </form>
-      {error && <p>Error: {error}</p>}
-      {loading ? <p>Loading...</p> : <Map lat={latitude} lng={longitude} />}
+</div>
+
+</section>
+      {/* {error && <p>Error: {error}</p>}
+      {loading ? <p>Loading...</p> : <Map lat={latitude} lng={longitude} />} */}
     </div>
   );
 };
