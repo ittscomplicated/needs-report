@@ -82,14 +82,13 @@ const Reports = () => {
   return (
     <div>
 
-<section class="w-full lg:h-screen flex items-center justify-center bg-gray-50">
+<section class="w-full lg:h-screen flex items-center justify-center">
   {/* Parent Container of DIVS */}
-  <div class="max-w-4xl w-full bg-white rounded-lg shadow-2xl p-6 hover:shadow-[8px_8px_24px_rgba(0,0,0,0.3)] transition-shadow grid grid-cols-1 sm:grid-cols-2 gap-4">
+  <div class="max-w-4xl w-full rounded-lg shadow-2xl p-6 hover:shadow-[8px_8px_24px_rgba(0,0,0,0.3)] transition-shadow grid grid-cols-1 sm:grid-cols-2 gap-4">
 
   {/* Left Side */}
   <div class="max-w-lg w-full bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition-shadow">
     <div class="mx-auto max-w-lg text-center">
-      <h1 class="text-2xl font-bold sm:text-3xl">Report A Need!</h1>
 
       <p class="mt-4 text-gray-500">
        "blurb about why reporting a need is essential and how it helps the community "

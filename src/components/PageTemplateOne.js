@@ -2,7 +2,7 @@
 
 const PageTemplateOne = ({ title, content, images }) => {
   return (
-    <div className="flex flex-col items-center text-center px-6 py-12">
+    <div className="flex flex-col items-center text-center px-6 py-12 bg-orange-200	">
       {/* Title */}
       <h1 className="text-4xl font-bold text-orange-700 mb-4">{title}</h1>
 
