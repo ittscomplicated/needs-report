@@ -43,7 +43,6 @@ const CardSection = () => {
   </div>
 </div>
 
-
   );
 };
 
