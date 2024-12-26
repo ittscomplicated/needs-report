@@ -33,10 +33,16 @@ const CardSection = () => {
             <li key={i}>{sentence.trim()}{sentence.trim().endsWith('.') ? '' : '.'}</li>
           ))}
         </ul>
+                  <button
+            className="bg-green-600 text-white px-6 py-3 font-medium hover:bg-green-700 hover:scale-105 transition-transform transition-colors duration-200"
+          >
+            See more
+          </button>
       </div>
     ))}
   </div>
 </div>
+
 
   );
 };

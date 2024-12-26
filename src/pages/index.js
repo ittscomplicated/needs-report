@@ -1,7 +1,7 @@
 import CardSection from "@/components/CardSection"; 
 
 
-const HomePage = ({ backgroundOpacity = 0.3 }) => {
+const HomePage = ({ backgroundOpacity = 0.5 }) => {
   return (
     <div className="relative w-full h-screen">
       {/* Background Map */}
@@ -41,11 +41,6 @@ const HomePage = ({ backgroundOpacity = 0.3 }) => {
           >
             Search
           </button>
-        </div>
-
-        {/* Cards Section */}
-        <div class="pt-10">
-          <CardSection />
         </div>
         
 
