@@ -91,7 +91,7 @@ const Reports = () => {
     <div class="mx-auto max-w-lg text-center">
 
       <p class="mt-4 text-gray-500">
-       "blurb about why reporting a need is essential and how it helps the community "
+       "Every shared need plants the seed for a stronger, more caring community to grow"
       </p>
       <br></br>
     </div>
@@ -147,7 +147,7 @@ const Reports = () => {
 
 
       <button type="button"
-        class="!mt-8 px-6 py-2 w-full bg-[#333] hover:bg-[#444] text-sm text-white mx-auto block">Submit</button>
+        class="!mt-8 px-6 py-2 w-full bg-[#064E65] text-sm text-white mx-auto block">Submit</button>
     </form>
 
   </div>

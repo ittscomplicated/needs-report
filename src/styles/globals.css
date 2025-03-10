@@ -2,6 +2,12 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import url("https://fonts.googleapis.com/css2?family=Radley&display=swap");
+
+.radley-font {
+  font-family: "Radley", serif;
+}
+
 
 body {
   font-family: Arial, sans-serif;

@@ -1,12 +1,16 @@
-// pages/_app.js
-import '@/styles/globals.css';
-import Layout from '../components/Layout';
+import "../styles/globals.css"; // Ensure Tailwind is working
+import Header from "../components/Header";
+import Footer from "../components/Footer";
 
 function MyApp({ Component, pageProps }) {
   return (
-    <Layout>
-      <Component {...pageProps} />
-    </Layout>
+    <div className="flex flex-col min-h-screen">
+      <Header /> {/* ✅ Persistent Navbar */}
+      <main className="flex-grow">
+        <Component {...pageProps} />
+      </main>
+      <Footer /> {/* ✅ Persistent Footer */}
+    </div>
   );
 }
 

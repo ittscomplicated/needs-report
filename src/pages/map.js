@@ -84,7 +84,7 @@ const MapLanding = () => {
 
   return (
     <div>
-      <h1>Google Maps Example</h1>
+      <h1 className='text-3xl'>Map Example Coming Soon With Data</h1>
       <div id="map" style={{ height: '400px', width: '100%' }}></div>
     </div>
   );

@@ -1,5 +1,5 @@
-// pages/MapLanding.js
-import React, { useEffect, useState } from 'react';
+// components/Map.js
+import { useEffect, useState } from 'react';
 import loader from '../utils/googleMapsLoader';
 
 const MapLanding = () => {
