@@ -1,4 +1,3 @@
-// pages/MapLanding.js
 import React, { useEffect, useState } from 'react';
 import loader from '../utils/googleMapsLoader';
 
@@ -15,7 +14,7 @@ const MapLanding = () => {
             FilterExpression: "attribute_exists(userID)",
           };
 
-          // Call the API route and pass table name and query parameters
+          // Fetch data from API
           const response = await fetch('/api/fetchFromDatabase', {
             method: 'POST',
             headers: {
@@ -24,38 +23,46 @@ const MapLanding = () => {
             body: JSON.stringify({ tableName: 'userData', queryParams }),
           });
 
-          if (!response.ok) {
-            throw new Error("Failed to fetch places data");
-          }
+          if (!response.ok) throw new Error("Failed to fetch places data");
 
           const result = await response.json();
           console.log("Fetched places data:", result.items);
 
-          // Add each location as a marker on the map
+          if (result.items.length === 0) return; // No locations
+
+          // Convert coordinates & create markers
           const newMarkers = result.items.map((location) => {
-            // Extract the nested string values and convert them to numbers
             const latitude = parseFloat(location.latitude.N);
             const longitude = parseFloat(location.longitude.N);
 
-            // Check if latitude and longitude are valid numbers
             if (!isNaN(latitude) && !isNaN(longitude)) {
               const latLng = { lat: latitude, lng: longitude };
 
-              // Create a marker and add it to the map
+              // Create a marker
               const marker = new window.google.maps.Marker({
                 position: latLng,
-                map: map, // Attach the map instance
+                map: map,
                 title: location.name.S || 'Location',
               });
+
               return marker;
             } else {
-              console.error(`Invalid coordinates for location:`, location);
+              console.error("Invalid coordinates:", location);
               return null;
             }
           });
 
-          // Filter out any null markers and set state
-          setPlaces(newMarkers.filter((marker) => marker !== null));
+          // Filter out null markers
+          const validMarkers = newMarkers.filter((marker) => marker !== null);
+
+          // Adjust the map center & bounds
+          if (validMarkers.length > 0) {
+            const bounds = new window.google.maps.LatLngBounds();
+            validMarkers.forEach(marker => bounds.extend(marker.getPosition()));
+            map.fitBounds(bounds); // Adjusts map zoom to fit markers
+          }
+
+          setPlaces(validMarkers);
         } catch (error) {
           console.error("Error fetching places:", error);
         }
@@ -63,29 +70,25 @@ const MapLanding = () => {
 
       fetchPlaces();
     }
-  }, [map]); // Run only when the map is initialized
+  }, [map]);
 
   // Initialize Google Maps
   useEffect(() => {
     loader.load().then(() => {
       const mapOptions = {
-        center: { lat: -25.344, lng: 131.031 }, // Default center
-        zoom: 0,
+        center: { lat: 37.7749, lng: -122.4194 }, // Default center (San Francisco)
+        zoom: 10,
       };
 
-      const newMap = new window.google.maps.Map(
-        document.getElementById('map'),
-        mapOptions
-      );
-
-      setMap(newMap); // Set the map instance
+      const newMap = new window.google.maps.Map(document.getElementById('map'), mapOptions);
+      setMap(newMap);
     });
-  }, []); // Load map on component mount
+  }, []);
 
   return (
-    <div>
-      <h1 className='text-3xl'>Map Example Coming Soon With Data</h1>
-      <div id="map" style={{ height: '400px', width: '100%' }}></div>
+    <div className="min-h-screen flex flex-col items-center justify-center">
+      <h1 className="text-3xl font-bold text-[#064E65] mb-4">Map of Locations</h1>
+      <div id="map" className="w-full max-w-4xl h-96 rounded-lg shadow-lg"></div>
     </div>
   );
 };
