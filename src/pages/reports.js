@@ -12,7 +12,7 @@ const Reports = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const API_ENDPOINT = "https://3jvbo1tb1f.execute-api.us-west-2.amazonaws.com/dev/StoreCoordinatesFunction";
+  const API_ENDPOINT = process.env.NEXT_PUBLIC_API_ENDPOINT;
 
   useEffect(() => {
     if (navigator.geolocation) {
