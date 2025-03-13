@@ -111,7 +111,7 @@ const MapLanding = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center">
-      <h1 className="text-3xl font-bold text-[#064E65] mb-4">Map of Reported Locations</h1>
+      <h1 className="text-3xl font-bold text-[#064E65] mb-4">Map of Reported Needs</h1>
         <p className="text-gray-600 mb-4">Click on the markers to view report details.</p>
         <p className="text-gray-600 mb-4">This is a test to see if the map will load with the correct markers and data</p>        
         <p className="text-gray-600 mb-4">More refinement to come</p>        
