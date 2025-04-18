@@ -129,62 +129,70 @@ const Reports = () => {
                   className="px-2 py-2 w-full border-b-2 focus:border-[#333] outline-none text-sm bg-white"
                 />
               </div>
-              <div className="flex items-center space-x-2">
-                <label className="text-black-400 w-36 text-sm">Phone No.</label>
+              <div className="flex items-start sm:items-center">
+                <label className="text-black-400 w-36 text-sm pt-2">
+                  Phone No.
+                </label>
 
-                <select
-                  value={countryCode}
-                  onChange={(e) => {
-                    setCountryCode(e.target.value);
-                    if (e.target.value !== "") setCustomCode(""); // reset manual input if not "Other"
-                  }}
-                  className="border border-gray-300 text-sm rounded-md py-2 px-2 bg-white"
-                  required
-                >
-                  <option value="+1">🇺🇸 +1</option>
-                  <option value="+44">🇬🇧 +44</option>
-                  <option value="+52">🇲🇽 +52</option>
-                  <option value="+91">🇮🇳 +91</option>
-                  <option value="">🌍 Other</option>
-                </select>
+                <div className="flex flex-col sm:flex-row gap-2 w-full">
+                  {/* Country Code Selector */}
+                  <div className="flex gap-2">
+                    <select
+                      value={countryCode}
+                      onChange={(e) => {
+                        setCountryCode(e.target.value);
+                        if (e.target.value !== "") setCustomCode("");
+                      }}
+                      className="border border-gray-300 text-sm rounded-md py-2 px-2 bg-white w-[100px]"
+                      required
+                    >
+                      <option value="+1">🇺🇸 +1</option>
+                      <option value="+44">🇬🇧 +44</option>
+                      <option value="+52">🇲🇽 +52</option>
+                      <option value="+91">🇮🇳 +91</option>
+                      <option value="">🌍 Other</option>
+                    </select>
 
-                {countryCode === "" && (
+                    {countryCode === "" && (
+                      <input
+                        type="text"
+                        value={customCode}
+                        onChange={(e) =>
+                          setCustomCode(e.target.value.replace(/[^\d+]/g, ""))
+                        }
+                        placeholder="+__"
+                        className="w-[80px] border border-gray-300 rounded-md py-2 px-2 text-sm"
+                        required
+                      />
+                    )}
+                  </div>
+
+                  {/* Phone Number Input */}
                   <input
-                    type="text"
-                    value={customCode}
-                    onChange={(e) =>
-                      setCustomCode(e.target.value.replace(/[^\d+]/g, ""))
-                    }
-                    placeholder="+__"
-                    className="w-24 border border-gray-300 rounded-md py-2 px-2 text-sm"
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => {
+                      const input = e.target.value.replace(/\D/g, "");
+                      let formatted = input;
+
+                      if (input.length > 6) {
+                        formatted = `(${input.slice(0, 3)}) ${input.slice(
+                          3,
+                          6
+                        )}-${input.slice(6)}`;
+                      } else if (input.length > 3) {
+                        formatted = `(${input.slice(0, 3)}) ${input.slice(3)}`;
+                      } else if (input.length > 0) {
+                        formatted = `(${input}`;
+                      }
+
+                      setPhone(formatted);
+                    }}
+                    placeholder="(123) 456-7890"
                     required
+                    className="flex-grow px-2 py-2 border-b-2 focus:border-[#333] outline-none text-sm bg-white"
                   />
-                )}
-
-                <input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => {
-                    const input = e.target.value.replace(/\D/g, "");
-                    let formatted = input;
-
-                    if (input.length > 6) {
-                      formatted = `(${input.slice(0, 3)}) ${input.slice(
-                        3,
-                        6
-                      )}-${input.slice(6)}`;
-                    } else if (input.length > 3) {
-                      formatted = `(${input.slice(0, 3)}) ${input.slice(3)}`;
-                    } else if (input.length > 0) {
-                      formatted = `(${input}`;
-                    }
-
-                    setPhone(formatted);
-                  }}
-                  placeholder="(123) 456-7890"
-                  required
-                  className="flex-grow px-2 py-2 border-b-2 focus:border-[#333] outline-none text-sm bg-white"
-                />
+                </div>
               </div>
 
               <div className="flex items-center">
