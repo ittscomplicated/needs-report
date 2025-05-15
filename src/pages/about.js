@@ -31,7 +31,7 @@ function AboutPage() {
     },
     {
       title: "Why We Are Doing This",
-      text: "We know that every voice matters. By amplifying concerns and ideas, we can create meaningful change and build a community where everyone feels seen.",
+      text: "We know that every voice matters. By amplifying issues and concerns, we can create meaningful change and build a community where everyone feels seen.",
     },
     {
       title: "What We Want to Provide",

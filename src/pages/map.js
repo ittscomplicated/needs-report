@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { useRouter } from "next/router";
 import loader from "../utils/googleMapsLoader";
 
 const categoryColors = {
@@ -49,13 +50,16 @@ const getPinIcon = (color) => ({
   strokeColor: "#ffffff",
 });
 
-const MapLanding = () => {
+export default function MapLanding() {
+  const router = useRouter();
+  const { report: reportIdFromURL } = router.query;
+
   const [map, setMap] = useState(null);
   const [markers, setMarkers] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [activeInfoWindow, setActiveInfoWindow] = useState(null);
-  const reportsRef = useRef([]); // Cached reports
 
+  const reportsRef = useRef([]);
   const API_ENDPOINT = process.env.NEXT_PUBLIC_API_FETCH_ENDPOINT;
 
   const clearMarkers = () => {
@@ -64,15 +68,16 @@ const MapLanding = () => {
   };
 
   const renderMarkers = (reports) => {
-    const newMarkers = [];
     const bounds = new window.google.maps.LatLngBounds();
+    const newMarkers = [];
 
     reports.forEach((report) => {
       const lat = parseFloat(report.latitude);
       const lng = parseFloat(report.longitude);
       if (isNaN(lat) || isNaN(lng)) return;
 
-      const color = categoryColors[report.type?.toLowerCase()] || "#D6D6D6";
+      const color =
+        categoryColors[report.type?.toLowerCase()] || categoryColors.other;
 
       const marker = new window.google.maps.Marker({
         position: { lat, lng },
@@ -83,16 +88,16 @@ const MapLanding = () => {
 
       const infoWindow = new window.google.maps.InfoWindow({
         content: `
-          <div style="font-family:sans-serif; padding:12px 14px; max-width:260px; line-height:1.4;">
-            <h2 style="margin:0 0 8px; font-size:18px; color:#064E65;">${
+          <div style="font-family:sans-serif;padding:12px 14px;max-width:260px;line-height:1.4;">
+            <h2 style="margin:0 0 8px;font-size:18px;color:#064E65;">${
               report.type
             }</h2>
-            <hr style="margin:0 0 8px; border:none; border-top:1px solid #ddd;" />
+            <hr style="margin:0 0 8px;border:none;border-top:1px solid #ddd;" />
             <p><strong>Location:</strong> ${
               report.locationName || "Unknown"
             }</p>
             <p><strong>Message:</strong> ${report.details || "No message"}</p>
-            <p style="font-size:12px; color:#888;">${new Date(
+            <p style="font-size:12px;color:#888;">${new Date(
               report.timestamp
             ).toLocaleDateString()}</p>
           </div>
@@ -105,12 +110,25 @@ const MapLanding = () => {
         setActiveInfoWindow(infoWindow);
       });
 
-      newMarkers.push(marker);
+      newMarkers.push({ marker, report });
       bounds.extend(marker.getPosition());
     });
 
     if (newMarkers.length > 0) map.fitBounds(bounds);
-    setMarkers(newMarkers);
+    setMarkers(newMarkers.map((m) => m.marker));
+  };
+
+  const fetchAndRenderReports = async () => {
+    try {
+      const res = await fetch(API_ENDPOINT);
+      const data = await res.json();
+      if (data.reports) {
+        reportsRef.current = data.reports;
+        filterAndRender();
+      }
+    } catch (err) {
+      console.error("Fetch error:", err);
+    }
   };
 
   const filterAndRender = () => {
@@ -119,52 +137,84 @@ const MapLanding = () => {
           (r) => r.type?.toLowerCase() === selectedCategory
         )
       : reportsRef.current;
+
     clearMarkers();
     renderMarkers(filtered);
   };
 
+  const zoomToReportIfNeeded = () => {
+    if (!reportIdFromURL || !map || markers.length === 0) return;
+
+    const targetReport = reportsRef.current.find(
+      (r) => r.report_id === reportIdFromURL
+    );
+    if (!targetReport) return;
+
+    const targetMarker = markers.find((m) => {
+      const pos = m.getPosition();
+      return (
+        pos.lat().toFixed(6) === parseFloat(targetReport.latitude).toFixed(6) &&
+        pos.lng().toFixed(6) === parseFloat(targetReport.longitude).toFixed(6)
+      );
+    });
+
+    if (targetMarker) {
+      map.panTo(targetMarker.getPosition());
+      map.setZoom(15);
+
+      const infoWindow = new window.google.maps.InfoWindow({
+        content: `
+          <div style="font-family:sans-serif;padding:12px 14px;max-width:260px;line-height:1.4;">
+            <h2 style="margin:0 0 8px;font-size:18px;color:#064E65;">${
+              targetReport.type
+            }</h2>
+            <hr style="margin:0 0 8px;border:none;border-top:1px solid #ddd;" />
+            <p><strong>Location:</strong> ${
+              targetReport.locationName || "Unknown"
+            }</p>
+            <p><strong>Message:</strong> ${
+              targetReport.details || "No message"
+            }</p>
+            <p style="font-size:12px;color:#888;">${new Date(
+              targetReport.timestamp
+            ).toLocaleDateString()}</p>
+          </div>
+        `,
+      });
+
+      infoWindow.open(map, targetMarker);
+      setActiveInfoWindow(infoWindow);
+    }
+  };
+
   useEffect(() => {
     loader.load().then(() => {
-      if (!window.google) return;
-
-      const mapInstance = new window.google.maps.Map(
-        document.getElementById("map"),
-        {
-          center: { lat: 37.7749, lng: -122.4194 },
-          zoom: 10,
-          styles: softCivicHarmony,
-          gestureHandling: "greedy",
-        }
-      );
-
-      setMap(mapInstance);
+      if (window.google) {
+        const mapInstance = new window.google.maps.Map(
+          document.getElementById("map"),
+          {
+            center: { lat: 37.7749, lng: -122.4194 },
+            zoom: 10,
+            styles: softCivicHarmony,
+            gestureHandling: "greedy",
+          }
+        );
+        setMap(mapInstance);
+      }
     });
   }, []);
 
   useEffect(() => {
-    if (!map) return;
-
-    const fetchAndRender = async () => {
-      try {
-        const res = await fetch(API_ENDPOINT);
-        const data = await res.json();
-        if (data.reports && Array.isArray(data.reports)) {
-          reportsRef.current = data.reports;
-          filterAndRender();
-        }
-      } catch (err) {
-        console.error("Error fetching reports:", err);
-      }
-    };
-
-    fetchAndRender();
+    if (map) fetchAndRenderReports();
   }, [map]);
 
   useEffect(() => {
-    if (map && reportsRef.current.length > 0) {
-      filterAndRender();
-    }
+    if (map && reportsRef.current.length > 0) filterAndRender();
   }, [selectedCategory]);
+
+  useEffect(() => {
+    if (markers.length > 0) zoomToReportIfNeeded();
+  }, [markers, reportIdFromURL, map]);
 
   const toggleCategory = (cat) => {
     setSelectedCategory((prev) => (prev === cat ? null : cat));
@@ -176,12 +226,10 @@ const MapLanding = () => {
         Map of Reported Needs
       </h1>
       <p className="text-gray-600 mb-4 text-center max-w-2xl">
-        Click a category to filter the map markers or click on a marker to see
-        more details.
+        Click a category to filter markers or click on a marker to see more.
       </p>
 
       <div className="w-full max-w-6xl flex flex-col lg:flex-row gap-4 items-start justify-center">
-        {/* Legend */}
         <div className="bg-white border border-gray-200 shadow-md rounded-lg p-4 w-full max-w-[220px]">
           <h2 className="text-sm font-semibold text-[#064E65] mb-2">
             Filter by Category
@@ -207,11 +255,8 @@ const MapLanding = () => {
           </ul>
         </div>
 
-        {/* Map */}
         <div id="map" className="w-full h-96 rounded-lg shadow-lg" />
       </div>
     </div>
   );
-};
-
-export default MapLanding;
+}
