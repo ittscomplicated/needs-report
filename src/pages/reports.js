@@ -29,6 +29,7 @@ export default function Reports() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  // Geolocation on mount
   useEffect(() => {
     navigator.geolocation?.getCurrentPosition(
       (pos) => {
@@ -42,28 +43,14 @@ export default function Reports() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!needMessage.trim()) {
-      alert("Please enter a message for your report.");
-      return;
-    }
-    if (!location) {
-      alert("Please select a location.");
-      return;
-    }
-    if (!categoryNeed) {
-      alert("Please select a category.");
-      return;
-    }
+    // Basic validations
+    if (!needMessage.trim()) return alert("Please enter a message.");
+    if (!location) return alert("Please select a location.");
+    if (!categoryNeed) return alert("Please select a category.");
 
     if (!isAnonymous) {
-      if (!name.trim()) {
-        alert("Please enter your name.");
-        return;
-      }
-      if (!email.trim()) {
-        alert("Please enter your email.");
-        return;
-      }
+      if (!name.trim()) return alert("Please enter your name.");
+      if (!email.trim()) return alert("Please enter your email.");
     }
 
     setLoading(true);
@@ -89,8 +76,7 @@ export default function Reports() {
       });
 
       const data = await res.json();
-
-      if (!res.ok) throw new Error(data.error || "Failed to submit");
+      if (!res.ok) throw new Error(data.error || "Submission failed");
 
       router.push(`/report-confirmation?reportId=${data.report_id}`);
     } catch (err) {
@@ -101,7 +87,7 @@ export default function Reports() {
     }
   };
 
-  const handlePhoneFormat = (e) => {
+  const formatPhone = (e) => {
     const input = e.target.value.replace(/\D/g, "");
     let formatted = input;
     if (input.length > 6) {
@@ -148,23 +134,27 @@ export default function Reports() {
               </div>
 
               {/* Category */}
-
-              {/* Category Field */}
               <div className="flex items-center">
-                <label className="text-black-400 w-36 text-sm">Category</label>
+                <label className="w-36 text-sm">Category</label>
                 <select
                   value={categoryNeed}
                   onChange={(e) => setCategoryNeed(e.target.value)}
-                  className="px-3 py-2 w-full text-sm font-medium border-2 border-black-300 rounded-md shadow-md h-10 focus:border-blue-600 focus:ring-2 focus:ring-inset focus:ring-blue-600 bg-white"
+                  className="px-3 py-2 w-full text-sm border-2 rounded-md shadow-md h-10 bg-white focus:ring-blue-600"
                 >
-                  <option value="education">Education</option>
-                  <option value="energy">Energy</option>
-                  <option value="equality">Equality</option>
-                  <option value="financial">Financial</option>
-                  <option value="food">Food</option>
-                  <option value="health">Health</option>
-                  <option value="infrastructure">Infrastructure</option>
-                  <option value="other">Other</option>
+                  {[
+                    "education",
+                    "energy",
+                    "equality",
+                    "financial",
+                    "food",
+                    "health",
+                    "infrastructure",
+                    "other",
+                  ].map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -198,7 +188,6 @@ export default function Reports() {
                 </button>
               </div>
 
-              {/* Name, Email, Phone */}
               {!isAnonymous && (
                 <>
                   <div className="flex items-center">
@@ -233,8 +222,8 @@ export default function Reports() {
                           }}
                           className="border rounded-md p-2 text-sm w-[100px]"
                         >
-                          {countryCodes.map(({ label, value }) => (
-                            <option key={value} value={value}>
+                          {countryCodes.map(({ label, value }, idx) => (
+                            <option key={`${value}-${idx}`} value={value}>
                               {label}
                             </option>
                           ))}
@@ -256,7 +245,7 @@ export default function Reports() {
                       <input
                         type="tel"
                         value={phone}
-                        onChange={handlePhoneFormat}
+                        onChange={formatPhone}
                         placeholder="(123) 456-7890"
                         className="flex-grow border-b-2 p-2 text-sm"
                       />
@@ -265,7 +254,6 @@ export default function Reports() {
                 </>
               )}
 
-              {/* Submit */}
               <button
                 type="submit"
                 disabled={loading}
@@ -276,7 +264,7 @@ export default function Reports() {
             </form>
           </div>
 
-          {/* Right Image */}
+          {/* Right Side Image */}
           <div className="flex items-center justify-center">
             <img
               src="/images/handsDraw.png"
