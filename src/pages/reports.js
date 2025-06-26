@@ -78,8 +78,9 @@ export default function Reports() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Submission failed");
 
-      router.push(`/report-confirmation?reportId=${data.report_id}`);
-    } catch (err) {
+      router.push(
+        `/report-confirmation?reportId=${data.report_id}&location=${encodeURIComponent(location)}&issue=${encodeURIComponent(categoryNeed)}`
+      );    } catch (err) {
       console.error(err);
       alert(err.message || "Failed to submit report.");
     } finally {

@@ -4,16 +4,49 @@ import Confetti from "react-confetti";
 import { useWindowSize } from "react-use";
 
 export default function ReportConfirmation() {
+  const API_ENDPOINT = process.env.NEXT_PUBLIC_API_ISSUE_ENDPOINT;
+
   const router = useRouter();
-  const { reportId } = router.query;
+  const { reportId, location, issue } = router.query;
   const { width, height } = useWindowSize();
   const [receiptCode, setReceiptCode] = useState("");
+  const [reportCount, setReportCount] = useState(null);
+
+
 
   useEffect(() => {
+    async function fetchReportCount() {
+      if (location && issue) {
+        try {
+          const response = await fetch(API_ENDPOINT, {
+            method: "POST",
+            body: JSON.stringify({ location, issue }),
+          });
+
+          console.log("Sending to API:", JSON.stringify({ location, issue }));
+
+
+          const data = await response.json();
+          if (response.ok) {
+            setReportCount(data.issueCount);
+            console.log("Received from API:", data.issueCount);
+
+          } else {
+            console.error("Failed to get report count:", data.error);
+          }
+        } catch (error) {
+          console.error("Error fetching count:", error);
+        }
+
+      }
+    }
+
     if (reportId) {
       setReceiptCode(generateReceiptCode());
+      fetchReportCount();
     }
-  }, [reportId]);
+  }, [reportId, location, issue]);
+  
 
   const handleViewReport = () => {
     if (reportId) {
@@ -33,6 +66,23 @@ export default function ReportConfirmation() {
           Your report has been submitted successfully. Together, we’re making
           the community stronger.
         </p>
+
+        {reportCount !== null && (
+          <p className="text-sm text-[#064E65] italic">
+            {reportCount === 0 ? (
+              <>
+                You are the <span className="font-semibold">first</span> person
+                to report about this in your area.
+              </>
+            ) : (
+              <>
+                You are the{" "}
+                <span className="font-semibold">#{reportCount + 1}</span> person
+                to report about this in your area.
+              </>
+            )}
+          </p>
+        )}
 
         {receiptCode ? (
           <div className="bg-gray-100 p-4 rounded-md border border-gray-300">

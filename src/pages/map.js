@@ -53,6 +53,8 @@ const getPinIcon = (color) => ({
 export default function MapLanding() {
   const router = useRouter();
   const { report: reportIdFromURL } = router.query;
+  const searchInputRef = useRef(null);
+
 
   const [map, setMap] = useState(null);
   const [markers, setMarkers] = useState([]);
@@ -200,6 +202,26 @@ export default function MapLanding() {
           }
         );
         setMap(mapInstance);
+
+        const input = document.getElementById("location-search");
+        const autocomplete = new window.google.maps.places.Autocomplete(input);
+        autocomplete.setFields(["geometry", "formatted_address"]);
+
+        autocomplete.addListener("place_changed", () => {
+          const place = autocomplete.getPlace();
+          if (!place.geometry) return;
+
+          const lat = place.geometry.location.lat();
+          const lng = place.geometry.location.lng();
+          const formatted = place.formatted_address;
+
+          mapInstance.panTo({ lat, lng });
+          mapInstance.setZoom(14);
+
+          // Dynamically fetch top 3 issues here using your API
+          fetchTopIssues(formatted);
+        });
+        
       }
     });
   }, []);
@@ -220,6 +242,26 @@ export default function MapLanding() {
     setSelectedCategory((prev) => (prev === cat ? null : cat));
   };
 
+  const fetchTopIssues = async (location) => {
+    const formattedLocation = location.toLowerCase().replace(/\s+/g, "-");
+
+    try {
+      const res = await fetch(process.env.NEXT_PUBLIC_API_ISSUE_ENDPOINT, {
+        method: "POST",
+        body: JSON.stringify({ location: formattedLocation }),
+      });
+
+      const data = await res.json();
+      if (data?.topIssues?.length) {
+        console.log("Top 3 issues in location:", data.topIssues);
+        // You could render these in a sidebar or toast
+      }
+    } catch (error) {
+      console.error("Error fetching top issues:", error);
+    }
+  };
+  
+
   return (
     <div className="min-h-screen px-4 py-6 flex flex-col items-center">
       <h1 className="text-3xl font-bold text-[#064E65] mb-2">
@@ -228,6 +270,13 @@ export default function MapLanding() {
       <p className="text-gray-600 mb-4 text-center max-w-2xl">
         Click a category to filter markers or click on a marker to see more.
       </p>
+
+      <input
+        id="location-search"
+        type="text"
+        placeholder="Search for a location..."
+        className="w-full max-w-md px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
 
       <div className="w-full max-w-6xl flex flex-col lg:flex-row gap-4 items-start justify-center">
         <div className="bg-white border border-gray-200 shadow-md rounded-lg p-4 w-full max-w-[220px]">
@@ -260,3 +309,4 @@ export default function MapLanding() {
     </div>
   );
 }
+
