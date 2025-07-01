@@ -76,9 +76,7 @@ export default function ReportConfirmation() {
               </>
             ) : (
               <>
-                You are the{" "}
-                <span className="font-semibold">#{reportCount + 1}</span> person
-                to report about this in your area.
+                <span className="font-semibold">#{reportCount + 1}</span> people have also reported about this in your area.
               </>
             )}
           </p>

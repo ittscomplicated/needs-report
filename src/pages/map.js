@@ -216,7 +216,7 @@ export default function MapLanding() {
           const formatted = place.formatted_address;
 
           mapInstance.panTo({ lat, lng });
-          mapInstance.setZoom(14);
+          mapInstance.setZoom(10);
 
           // Dynamically fetch top 3 issues here using your API
           fetchTopIssues(formatted);
@@ -271,41 +271,61 @@ export default function MapLanding() {
         Click a category to filter markers or click on a marker to see more.
       </p>
 
-      <input
-        id="location-search"
-        type="text"
-        placeholder="Search for a location..."
-        className="w-full max-w-md px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
-
-      <div className="w-full max-w-6xl flex flex-col lg:flex-row gap-4 items-start justify-center">
-        <div className="bg-white border border-gray-200 shadow-md rounded-lg p-4 w-full max-w-[220px]">
-          <h2 className="text-sm font-semibold text-[#064E65] mb-2">
-            Filter by Category
-          </h2>
-          <ul className="space-y-2 text-sm text-gray-800">
-            {Object.entries(categoryColors).map(([category, color]) => (
-              <li
-                key={category}
-                className={`flex items-center space-x-2 cursor-pointer ${
-                  selectedCategory === category
-                    ? "bg-[#f5f5f5] px-2 py-1 rounded"
-                    : ""
-                }`}
-                onClick={() => toggleCategory(category)}
-              >
-                <span
-                  className="inline-block w-4 h-4 rounded-full"
-                  style={{ backgroundColor: color }}
-                ></span>
-                <span className="capitalize">{category}</span>
-              </li>
-            ))}
-          </ul>
+      <div className="w-full max-w-6xl flex flex-col lg:flex-row gap-5 items-start justify-center">
+        {/* Sidebar */}
+        <div
+          className="bg-white border border-gray-200 shadow-md rounded-lg p-4 w-full max-w-[300px] flex-shrink-0"
+          id="sidebar-panel"
+        >
+          <input
+            id="location-search"
+            type="text"
+            placeholder="Search for a location"
+            className="w-full max-w-md px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <div className="bg-white border border-gray-200 shadow-md rounded-lg p-4 w-full max-w-[220px] mt-4">
+            <h2 className="text-md font-semibold text-[#064E65] mb-2">
+              Filter by Category
+            </h2>
+            <ul className="flex flex-wrap gap-2">
+              {Object.entries(categoryColors).map(([category, color]) => (
+                <li key={category}>
+                  <button
+                    type="button"
+                    className={`flex items-center space-x-2 px-3 py-1 rounded-md border transition-colors duration-150
+                      ${
+                        selectedCategory === category
+                          ? "bg-[#f5f5f5] border-gray-400"
+                          : "bg-white border-gray-200 hover:bg-gray-100"
+                      }
+                      shadow-sm focus:outline-none`}
+                    onClick={() => toggleCategory(category)}
+                  >
+                    <span
+                      className="inline-block w-4 h-4 rounded-full"
+                      style={{ backgroundColor: color }}
+                    ></span>
+                    <span className="capitalize font-medium">{category}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
 
-        <div id="map" className="w-full h-96 rounded-lg shadow-lg" />
+        {/* Map */}
+        <div
+          id="map"
+          className="w-full rounded-lg shadow-lg"
+          style={{
+            height: document?.getElementById("sidebar-panel")?.offsetHeight
+              ? document.getElementById("sidebar-panel").offsetHeight + "px"
+              : "100%", // fallback for SSR
+            minHeight: "300px",
+          }}
+        />
       </div>
+      <div className="mb-10" />
     </div>
   );
 }
