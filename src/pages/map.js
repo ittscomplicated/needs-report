@@ -318,7 +318,7 @@ export default function MapLanding() {
           id="map"
           className="w-full rounded-lg shadow-lg"
           style={{
-            height: document?.getElementById("sidebar-panel")?.offsetHeight
+            height: document.getElementById("sidebar-panel")?.offsetHeight
               ? document.getElementById("sidebar-panel").offsetHeight + "px"
               : "100%", // fallback for SSR
             minHeight: "300px",
