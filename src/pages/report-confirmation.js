@@ -76,7 +76,7 @@ export default function ReportConfirmation() {
               </>
             ) : (
               <>
-                <span className="font-semibold">#{reportCount + 1}</span> people have also reported about this in your area.
+                <span className="font-semibold">{reportCount + 1}</span> people have also reported about this in your area.
               </>
             )}
           </p>
