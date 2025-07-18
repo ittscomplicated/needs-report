@@ -63,6 +63,10 @@ export default function MapLanding() {
   const [markers, setMarkers] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [activeInfoWindow, setActiveInfoWindow] = useState(null);
+  const [topIssues, setTopIssues] = useState([]);
+  const [searchedLocation, setSearchedLocation] = useState("");
+
+
 
   const reportsRef = useRef([]);
   const API_ENDPOINT = process.env.NEXT_PUBLIC_API_FETCH_ENDPOINT;
@@ -198,12 +202,22 @@ export default function MapLanding() {
         const mapInstance = new window.google.maps.Map(
           document.getElementById("map"),
           {
-            center: { lat: 37.7749, lng: -122.4194 },
-            zoom: 10,
+            center: { lat: 40.7128, lng: -74.0060 },
+            zoom: 2,
             styles: softCivicHarmony,
             gestureHandling: "greedy",
+            restriction: {
+              latLngBounds: {
+                north: 85,
+                south: -85,
+                west: -180,
+                east: 179.9999,
+              },
+              strictBounds: true,
+            },
           }
         );
+        
         setMap(mapInstance);
 
         const input = document.getElementById("location-search");
@@ -265,9 +279,13 @@ export default function MapLanding() {
       });
 
       const data = await res.json();
+      
       if (data?.topIssues?.length) {
-        console.log("Top 3 issues in location:", data.topIssues);
-        // You could render these in a sidebar or toast
+        setTopIssues(data.topIssues);
+        setSearchedLocation(location); // for display later
+      } else {
+        setTopIssues([]);
+        setSearchedLocation("");
       }
     } catch (error) {
       console.error("Error fetching top issues:", error);
@@ -340,6 +358,28 @@ export default function MapLanding() {
           }}
         />
       </div>
+      {/* Top Issues Section */}
+      {topIssues.length > 0 && (
+        <div className="mt-8 w-full max-w-4xl bg-white shadow-lg rounded-lg p-6 border border-gray-200">
+          <h2 className="text-xl font-semibold text-[#064E65] mb-4">
+            Top Reported Needs in {searchedLocation}
+          </h2>
+          <ul className="space-y-2">
+            {topIssues.map(({ issue, count }) => (
+              <li
+                key={issue}
+                className="flex justify-between items-center text-gray-800 border-b pb-1"
+              >
+                <span className="capitalize">{issue}</span>
+                <span className="text-sm text-[#064E65] font-semibold">
+                  {count} report{count > 1 ? "s" : ""}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       <div className="mb-10" />
     </div>
   );

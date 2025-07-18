@@ -14,7 +14,7 @@ See something your community needs? Whether it’s a broken streetlight, limited
 
 You can share your report right here on the site, or simply text us. Your voice matters.
     `,
-    image: "/images/Share.svg",
+    image: "/images/share.svg",
   },
   {
     title: "2. Submit Online or Text Us",
@@ -34,7 +34,7 @@ Your report appears on our public map to highlight which areas are most impacted
 
 The more people who share, the stronger our collective voice becomes.
     `,
-    image: "/images/signalPlace.svg",
+    image: "/images/signalplace.svg",
   },
 ];
 
