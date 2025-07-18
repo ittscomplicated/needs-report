@@ -41,14 +41,17 @@ const softCivicHarmony = [
   },
 ];
 
-const getPinIcon = (color) => ({
-  path: window.google.maps.SymbolPath.CIRCLE,
-  scale: 8,
-  fillColor: color,
-  fillOpacity: 1,
-  strokeWeight: 1,
-  strokeColor: "#ffffff",
-});
+const getPinIcon = (color) => {
+  if (typeof window === "undefined" || !window.google) return null;
+  return {
+    path: window.google.maps.SymbolPath.CIRCLE,
+    scale: 8,
+    fillColor: color,
+    fillOpacity: 1,
+    strokeWeight: 1,
+    strokeColor: "#ffffff",
+  };
+};
 
 export default function MapLanding() {
   const router = useRouter();
@@ -191,7 +194,7 @@ export default function MapLanding() {
 
   useEffect(() => {
     loader.load().then(() => {
-      if (window.google) {
+      if (typeof window !== "undefined" && window.google) {
         const mapInstance = new window.google.maps.Map(
           document.getElementById("map"),
           {
@@ -221,7 +224,6 @@ export default function MapLanding() {
           // Dynamically fetch top 3 issues here using your API
           fetchTopIssues(formatted);
         });
-        
       }
     });
   }, []);
@@ -237,6 +239,17 @@ export default function MapLanding() {
   useEffect(() => {
     if (markers.length > 0) zoomToReportIfNeeded();
   }, [markers, reportIdFromURL, map]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const mapDiv = document.getElementById("map");
+      const sidebar = document.getElementById("sidebar-panel");
+
+      if (mapDiv && sidebar) {
+        mapDiv.style.height = `${sidebar.offsetHeight}px`;
+      }
+    }
+  }, [map]);
 
   const toggleCategory = (cat) => {
     setSelectedCategory((prev) => (prev === cat ? null : cat));
@@ -318,9 +331,11 @@ export default function MapLanding() {
           id="map"
           className="w-full rounded-lg shadow-lg"
           style={{
-            height: document.getElementById("sidebar-panel")?.offsetHeight
-              ? document.getElementById("sidebar-panel").offsetHeight + "px"
-              : "100%", // fallback for SSR
+            height:
+              typeof window !== "undefined" &&
+              document.getElementById("sidebar-panel")?.offsetHeight
+                ? document.getElementById("sidebar-panel").offsetHeight + "px"
+                : "100%",
             minHeight: "300px",
           }}
         />
