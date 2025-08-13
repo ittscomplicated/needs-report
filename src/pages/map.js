@@ -56,8 +56,6 @@ const getPinIcon = (color) => {
 export default function MapLanding() {
   const router = useRouter();
   const { report: reportIdFromURL } = router.query;
-  const searchInputRef = useRef(null);
-
 
   const [map, setMap] = useState(null);
   const [markers, setMarkers] = useState([]);
@@ -65,25 +63,47 @@ export default function MapLanding() {
   const [activeInfoWindow, setActiveInfoWindow] = useState(null);
   const [topIssues, setTopIssues] = useState([]);
   const [searchedLocation, setSearchedLocation] = useState("");
-
-
+  const [showTestData, setShowTestData] = useState(false);
 
   const reportsRef = useRef([]);
+  const lastCenterRef = useRef(null);
+  const lastZoomRef = useRef(null);
   const API_ENDPOINT = process.env.NEXT_PUBLIC_API_FETCH_ENDPOINT;
+
+  const captureView = () => {
+    if (!map) return;
+    const c = map.getCenter?.();
+    if (c) {
+      lastCenterRef.current = { lat: c.lat(), lng: c.lng() };
+      lastZoomRef.current = map.getZoom?.();
+    }
+  };
 
   const clearMarkers = () => {
     markers.forEach((marker) => marker.setMap(null));
     setMarkers([]);
   };
 
-  const renderMarkers = (reports) => {
+  const renderMarkers = (reports, { preserveView = false } = {}) => {
+    clearMarkers();
+    if (!map) return;
+
+    if (!Array.isArray(reports) || reports.length === 0) {
+      if (!preserveView) {
+        map.setCenter({ lat: 20, lng: 0 });
+        map.setZoom(2);
+      }
+      setMarkers([]);
+      return;
+    }
+
     const bounds = new window.google.maps.LatLngBounds();
     const newMarkers = [];
 
-    reports.forEach((report) => {
-      const lat = parseFloat(report.latitude);
-      const lng = parseFloat(report.longitude);
-      if (isNaN(lat) || isNaN(lng)) return;
+    for (const report of reports) {
+      const lat = Number(report.latitude);
+      const lng = Number(report.longitude);
+      if (!Number.isFinite(lat) || !Number.isFinite(lng)) continue;
 
       const color =
         categoryColors[report.type?.toLowerCase()] || categoryColors.other;
@@ -119,25 +139,18 @@ export default function MapLanding() {
         setActiveInfoWindow(infoWindow);
       });
 
-      newMarkers.push({ marker, report });
+      newMarkers.push(marker);
       bounds.extend(marker.getPosition());
-    });
-
-    if (newMarkers.length > 0) map.fitBounds(bounds);
-    setMarkers(newMarkers.map((m) => m.marker));
-  };
-
-  const fetchAndRenderReports = async () => {
-    try {
-      const res = await fetch(API_ENDPOINT);
-      const data = await res.json();
-      if (data.reports) {
-        reportsRef.current = data.reports;
-        filterAndRender();
-      }
-    } catch (err) {
-      console.error("Fetch error:", err);
     }
+
+    if (preserveView && lastCenterRef.current && lastZoomRef.current != null) {
+      map.setCenter(lastCenterRef.current);
+      map.setZoom(lastZoomRef.current);
+    } else if (newMarkers.length > 0) {
+      map.fitBounds(bounds);
+    }
+
+    setMarkers(newMarkers);
   };
 
   const filterAndRender = () => {
@@ -147,8 +160,8 @@ export default function MapLanding() {
         )
       : reportsRef.current;
 
-    clearMarkers();
-    renderMarkers(filtered);
+    captureView();
+    renderMarkers(filtered, { preserveView: true });
   };
 
   const zoomToReportIfNeeded = () => {
@@ -198,35 +211,32 @@ export default function MapLanding() {
 
   useEffect(() => {
     loader.load().then(() => {
-      if (typeof window !== "undefined" && window.google) {
-        const mapInstance = new window.google.maps.Map(
-          document.getElementById("map"),
-          {
-            center: { lat: 40.7128, lng: -74.0060 },
-            zoom: 2,
-            styles: softCivicHarmony,
-            gestureHandling: "greedy",
-            restriction: {
-              latLngBounds: {
-                north: 85,
-                south: -85,
-                west: -180,
-                east: 179.9999,
-              },
-              strictBounds: true,
-            },
-          }
-        );
-        
-        setMap(mapInstance);
+      if (!window?.google) return;
 
-        const input = document.getElementById("location-search");
-        const autocomplete = new window.google.maps.places.Autocomplete(input);
-        autocomplete.setFields(["geometry", "formatted_address"]);
+      const mapInstance = new window.google.maps.Map(
+        document.getElementById("map"),
+        {
+          center: { lat: 40.7128, lng: -74.006 },
+          zoom: 2,
+          styles: softCivicHarmony,
+          gestureHandling: "greedy",
+          restriction: {
+            latLngBounds: { north: 85, south: -85, west: -180, east: 179.9999 },
+            strictBounds: true,
+          },
+        }
+      );
+      setMap(mapInstance);
+
+      const input = document.getElementById("location-search");
+      if (input) {
+        const autocomplete = new window.google.maps.places.Autocomplete(input, {
+          fields: ["geometry", "formatted_address"],
+        });
 
         autocomplete.addListener("place_changed", () => {
           const place = autocomplete.getPlace();
-          if (!place.geometry) return;
+          if (!place?.geometry) return;
 
           const lat = place.geometry.location.lat();
           const lng = place.geometry.location.lng();
@@ -234,8 +244,6 @@ export default function MapLanding() {
 
           mapInstance.panTo({ lat, lng });
           mapInstance.setZoom(10);
-
-          // Dynamically fetch top 3 issues here using your API
           fetchTopIssues(formatted);
         });
       }
@@ -243,27 +251,60 @@ export default function MapLanding() {
   }, []);
 
   useEffect(() => {
-    if (map) fetchAndRenderReports();
-  }, [map]);
+    if (!map) return;
+    const mode = showTestData ? "test" : "real";
+
+    (async () => {
+      try {
+        captureView();
+
+        const res = await fetch(`${API_ENDPOINT}?mode=${mode}`);
+        if (!res.ok) {
+          console.error("Fetch failed:", res.status, await res.text());
+          reportsRef.current = [];
+          renderMarkers([], { preserveView: true });
+          return;
+        }
+
+        const data = await res.json();
+        const list = Array.isArray(data.reports) ? data.reports : [];
+        reportsRef.current = list;
+
+        const filtered = selectedCategory
+          ? list.filter((r) => r.type?.toLowerCase() === selectedCategory)
+          : list;
+
+        renderMarkers(filtered, { preserveView: true });
+      } catch (err) {
+        console.error("Network error fetching reports:", err);
+        reportsRef.current = [];
+        renderMarkers([], { preserveView: true });
+      }
+    })();
+  }, [map, showTestData, selectedCategory]);
 
   useEffect(() => {
-    if (map && reportsRef.current.length > 0) filterAndRender();
-  }, [selectedCategory]);
-
-  useEffect(() => {
-    if (markers.length > 0) zoomToReportIfNeeded();
+    if (markers.length > 0 && reportIdFromURL && map) {
+      zoomToReportIfNeeded();
+    }
   }, [markers, reportIdFromURL, map]);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const mapDiv = document.getElementById("map");
-      const sidebar = document.getElementById("sidebar-panel");
+    if (typeof window === "undefined") return;
+    const mapDiv = document.getElementById("map");
+    const sidebar = document.getElementById("sidebar-panel");
+    if (!mapDiv || !sidebar) return;
 
-      if (mapDiv && sidebar) {
-        mapDiv.style.height = `${sidebar.offsetHeight}px`;
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        mapDiv.style.height = `${entry.contentRect.height}px`;
       }
-    }
-  }, [map]);
+    });
+    ro.observe(sidebar);
+    mapDiv.style.height = `${sidebar.offsetHeight}px`;
+
+    return () => ro.disconnect();
+  }, []);
 
   const toggleCategory = (cat) => {
     setSelectedCategory((prev) => (prev === cat ? null : cat));
@@ -271,7 +312,6 @@ export default function MapLanding() {
 
   const fetchTopIssues = async (location) => {
     const formattedLocation = location.toLowerCase().replace(/\s+/g, "-");
-
     try {
       const res = await fetch(process.env.NEXT_PUBLIC_API_ISSUE_ENDPOINT, {
         method: "POST",
@@ -279,10 +319,9 @@ export default function MapLanding() {
       });
 
       const data = await res.json();
-      
       if (data?.topIssues?.length) {
         setTopIssues(data.topIssues);
-        setSearchedLocation(location); // for display later
+        setSearchedLocation(location);
       } else {
         setTopIssues([]);
         setSearchedLocation("");
@@ -291,7 +330,6 @@ export default function MapLanding() {
       console.error("Error fetching top issues:", error);
     }
   };
-  
 
   return (
     <div className="min-h-screen px-4 py-6 flex flex-col items-center">
@@ -303,7 +341,6 @@ export default function MapLanding() {
       </p>
 
       <div className="w-full max-w-6xl flex flex-col lg:flex-row gap-5 items-start justify-center">
-        {/* Sidebar */}
         <div
           className="bg-white border border-gray-200 shadow-md rounded-lg p-4 w-full max-w-[300px] flex-shrink-0"
           id="sidebar-panel"
@@ -342,9 +379,26 @@ export default function MapLanding() {
               ))}
             </ul>
           </div>
+          <div className="mt-4 flex items-center justify-between">
+            <span className="text-sm font-medium">Show test data</span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={showTestData}
+              onClick={() => setShowTestData((v) => !v)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
+                showTestData ? "bg-[#064E65]" : "bg-gray-300"
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
+                  showTestData ? "translate-x-5" : "translate-x-1"
+                }`}
+              />
+            </button>
+          </div>
         </div>
 
-        {/* Map */}
         <div
           id="map"
           className="w-full rounded-lg shadow-lg"
@@ -358,7 +412,7 @@ export default function MapLanding() {
           }}
         />
       </div>
-      {/* Top Issues Section */}
+
       {topIssues.length > 0 && (
         <div className="mt-8 w-full max-w-4xl bg-white shadow-lg rounded-lg p-6 border border-gray-200">
           <h2 className="text-xl font-semibold text-[#064E65] mb-4">
@@ -384,4 +438,3 @@ export default function MapLanding() {
     </div>
   );
 }
-

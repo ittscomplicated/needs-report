@@ -29,6 +29,7 @@ export default function Reports() {
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [isTestData, setIsTestData] = useState(false);
 
   // Geolocation on mount
   useEffect(() => {
@@ -73,6 +74,7 @@ export default function Reports() {
           name: isAnonymous ? "" : name,
           email: isAnonymous ? "" : email,
           phone: isAnonymous ? "" : finalCode + cleanedPhone,
+          isTestData,
         }),
       });
 
