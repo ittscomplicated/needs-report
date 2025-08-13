@@ -9,9 +9,8 @@ function Footer() {
         </p> */}
       <hr className="my-4 border-t-2 border-white w-1/5 mx-auto" />
       <p className="text-xlg tracking-wide">
-        &copy; {new Date().getFullYear()}{" "}
-        <span className="font-semibold">Needs Report</span>. All rights
-        reserved.
+        {/* &copy; {new Date().getFullYear()}{" "} */}
+        <span className="font-semibold">Needs Report</span> is a project of EmpowermentWORKS 501(c)3.
       </p>
     </footer>
   );
