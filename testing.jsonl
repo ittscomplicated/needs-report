@@ -1,0 +1,30 @@
+{ "latitude": 37.7599, "longitude": -122.4148, "location": "SF Mission, CA, USA", "categoryNeed": "food", "needMessage": "Free food pantry needed near 24th St.", "isAnonymous": true, "isTestData": true }
+{ "latitude": 51.5074, "longitude": -0.1278, "location": "London, UK", "categoryNeed": "infrastructure", "needMessage": "Broken streetlights across Westminster.", "isAnonymous": true, "isTestData": true }
+{ "latitude": -33.8688, "longitude": 151.2093, "location": "Sydney, Australia", "categoryNeed": "health", "needMessage": "Mobile clinic requested for weekend hours.", "isAnonymous": true, "isTestData": true }
+{ "latitude": 19.4326, "longitude": -99.1332, "location": "Mexico City, Mexico", "categoryNeed": "energy", "needMessage": "Frequent power outages in Roma Norte.", "isAnonymous": true, "isTestData": true }
+{ "latitude": 48.8566, "longitude": 2.3522, "location": "Paris, France", "categoryNeed": "equality", "needMessage": "Accessibility ramps for metro entrance.", "isAnonymous": true, "isTestData": true }
+{ "latitude": 28.6139, "longitude": 77.2090, "location": "New Delhi, India", "categoryNeed": "education", "needMessage": "After‑school tutoring for govt. school.", "isAnonymous": true, "isTestData": true }
+{ "latitude": -1.2921, "longitude": 36.8219, "location": "Nairobi, Kenya", "categoryNeed": "water", "needMessage": "Community water station needed in Kibera.", "isAnonymous": true, "isTestData": true }
+{ "latitude": -23.5505, "longitude": -46.6333, "location": "São Paulo, Brazil", "categoryNeed": "financial", "needMessage": "Micro‑grants for street vendors pilot.", "isAnonymous": true, "isTestData": true }
+{ "latitude": 35.6762, "longitude": 139.6503, "location": "Tokyo, Japan", "categoryNeed": "infrastructure", "needMessage": "More bike racks near Shibuya Station.", "isAnonymous": true, "isTestData": true }
+{ "latitude": 40.4168, "longitude": -3.7038, "location": "Madrid, Spain", "categoryNeed": "other", "needMessage": "Neighborhood notice board for events.", "isAnonymous": true, "isTestData": true }
+{ "latitude": 43.6532, "longitude": -79.3832, "location": "Toronto, Canada", "categoryNeed": "health", "needMessage": "Naloxone distribution points along Queen St.", "isAnonymous": true, "isTestData": true }
+{ "latitude": 30.0444, "longitude": 31.2357, "location": "Cairo, Egypt", "categoryNeed": "food", "needMessage": "Low‑cost produce market in Nasr City.", "isAnonymous": true, "isTestData": true }
+{ "latitude": 41.9028, "longitude": 12.4964, "location": "Rome, Italy", "categoryNeed": "infrastructure", "needMessage": "Playground repair in Trastevere.", "isAnonymous": true, "isTestData": true }
+{ "latitude": 59.3293, "longitude": 18.0686, "location": "Stockholm, Sweden", "categoryNeed": "equality", "needMessage": "Sign language interpreters at clinics.", "isAnonymous": true, "isTestData": true }
+{ "latitude": -34.6037, "longitude": -58.3816, "location": "Buenos Aires, Argentina", "categoryNeed": "energy", "needMessage": "Solar pilot for apartment rooftops.", "isAnonymous": true, "isTestData": true }
+{ "latitude": 55.7558, "longitude": 37.6176, "location": "Moscow, Russia", "categoryNeed": "education", "needMessage": "Free coding workshops for teens.", "isAnonymous": true, "isTestData": true }
+{ "latitude": 25.276987, "longitude": 55.296249, "location": "Dubai, UAE", "categoryNeed": "financial", "needMessage": "No‑fee remittance booth in Deira.", "isAnonymous": true, "isTestData": true }
+{ "latitude": 52.5200, "longitude": 13.4050, "location": "Berlin, Germany", "categoryNeed": "health", "needMessage": "Mental health drop‑in in Kreuzberg.", "isAnonymous": true, "isTestData": true }
+{ "latitude": -26.2041, "longitude": 28.0473, "location": "Johannesburg, South Africa", "categoryNeed": "infrastructure", "needMessage": "Street drainage fix in Hillbrow.", "isAnonymous": true, "isTestData": true }
+{ "latitude": 13.7563, "longitude": 100.5018, "location": "Bangkok, Thailand", "categoryNeed": "food", "needMessage": "Community fridge near Bang Rak.", "isAnonymous": true, "isTestData": true }
+{ "latitude": 37.5665, "longitude": 126.9780, "location": "Seoul, South Korea", "categoryNeed": "education", "needMessage": "Language exchange hub in Hongdae.", "isAnonymous": true, "isTestData": true }
+{ "latitude": 6.5244, "longitude": 3.3792, "location": "Lagos, Nigeria", "categoryNeed": "water", "needMessage": "Borehole maintenance in Yaba.", "isAnonymous": true, "isTestData": true }
+{ "latitude": 45.4642, "longitude": 9.1900, "location": "Milan, Italy", "categoryNeed": "equality", "needMessage": "Wheelchair access on tram stops.", "isAnonymous": true, "isTestData": true }
+{ "latitude": 1.3521, "longitude": 103.8198, "location": "Singapore", "categoryNeed": "energy", "needMessage": "EV chargers at HDB carparks.", "isAnonymous": true, "isTestData": true }
+{ "latitude": 22.5726, "longitude": 88.3639, "location": "Kolkata, India", "categoryNeed": "health", "needMessage": "Free vision screening camp.", "isAnonymous": true, "isTestData": true }
+{ "latitude": -36.8485, "longitude": 174.7633, "location": "Auckland, New Zealand", "categoryNeed": "other", "needMessage": "Tool lending library for DIY.", "isAnonymous": true, "isTestData": true }
+{ "latitude": 55.9533, "longitude": -3.1883, "location": "Edinburgh, UK", "categoryNeed": "infrastructure", "needMessage": "Crosswalk repaint at Leith Walk.", "isAnonymous": true, "isTestData": true }
+{ "latitude": 14.5995, "longitude": 120.9842, "location": "Manila, Philippines", "categoryNeed": "food", "needMessage": "Community kitchen in Tondo.", "isAnonymous": true, "isTestData": true }
+{ "latitude": 40.7128, "longitude": -74.0060, "location": "New York, NY, USA", "categoryNeed": "financial", "needMessage": "Tax prep workshops in Harlem.", "isAnonymous": true, "isTestData": true }
+{ "latitude": 41.3851, "longitude": 2.1734, "location": "Barcelona, Spain", "categoryNeed": "education", "needMessage": "Digital literacy for seniors.", "isAnonymous": true, "isTestData": true }
