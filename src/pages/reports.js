@@ -81,9 +81,12 @@ export default function Reports() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Submission failed");
 
-      router.push(
-        `/report-confirmation?reportId=${data.report_id}&location=${encodeURIComponent(location)}&issue=${encodeURIComponent(categoryNeed)}`
-      );    } catch (err) {
+     router.push(
+       `/report-confirmation?reportId=${data.report_id}` +
+         `&location=${encodeURIComponent(location)}` +
+         `&issue=${encodeURIComponent(categoryNeed)}` +
+         `&mode=${isTestData ? "test" : "real"}`
+     );   } catch (err) {
       console.error(err);
       alert(err.message || "Failed to submit report.");
     } finally {
@@ -147,56 +150,6 @@ export default function Reports() {
                 className="space-y-6 px-4 max-w-sm mx-auto"
                 onSubmit={handleSubmit}
               >
-                {/* Message */}
-                <div className="flex items-center space-x-4">
-                  <label className="w-36 text-sm">Message</label>
-                  <textarea
-                    value={needMessage}
-                    onChange={(e) => {
-                      setNeedMessage(e.target.value);
-                      e.target.style.height = "auto";
-                      e.target.style.height = `${e.target.scrollHeight}px`;
-                    }}
-                    className="w-full border-2 rounded-md p-2 text-sm resize-none"
-                    placeholder="Describe the need here..."
-                  />
-                </div>
-
-                {/* Category */}
-                <div className="flex items-center">
-                  <label className="w-36 text-sm">Category</label>
-                  <select
-                    value={categoryNeed}
-                    onChange={(e) => setCategoryNeed(e.target.value)}
-                    className="px-3 py-2 w-full text-sm border-2 rounded-md shadow-md h-10 bg-white focus:ring-blue-600"
-                  >
-                    {[
-                      "education",
-                      "energy",
-                      "equality",
-                      "financial",
-                      "food",
-                      "health",
-                      "infrastructure",
-                      "other",
-                    ].map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Location */}
-                <div className="flex items-center">
-                  <label className="w-36 text-sm">Location</label>
-                  <LocationAutocomplete
-                    setLocation={setLocation}
-                    setLatitude={setLatitude}
-                    setLongitude={setLongitude}
-                  />
-                </div>
-
                 {/* Anonymous Toggle */}
                 <div className="flex justify-between border-b border-gray-300 pb-2 mb-4">
                   <label className="text-sm italic">Stay Anonymous</label>
@@ -283,6 +236,56 @@ export default function Reports() {
                   </>
                 )}
 
+                {/* Message */}
+                <div className="flex items-center space-x-4">
+                  <label className="w-36 text-sm">Message</label>
+                  <textarea
+                    value={needMessage}
+                    onChange={(e) => {
+                      setNeedMessage(e.target.value);
+                      e.target.style.height = "auto";
+                      e.target.style.height = `${e.target.scrollHeight}px`;
+                    }}
+                    className="w-full border-2 rounded-md p-2 text-sm resize-none"
+                    placeholder="Describe the need here..."
+                  />
+                </div>
+
+                {/* Category */}
+                <div className="flex items-center">
+                  <label className="w-36 text-sm">Category</label>
+                  <select
+                    value={categoryNeed}
+                    onChange={(e) => setCategoryNeed(e.target.value)}
+                    className="px-3 py-2 w-full text-sm border-2 rounded-md shadow-md h-10 bg-white focus:ring-blue-600"
+                  >
+                    {[
+                      "education",
+                      "energy",
+                      "equality",
+                      "financial",
+                      "food",
+                      "health",
+                      "infrastructure",
+                      "other",
+                    ].map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Location */}
+                <div className="flex items-center">
+                  <label className="w-36 text-sm">Location</label>
+                  <LocationAutocomplete
+                    setLocation={setLocation}
+                    setLatitude={setLatitude}
+                    setLongitude={setLongitude}
+                  />
+                </div>
+
                 <button
                   type="submit"
                   disabled={loading}
@@ -294,12 +297,32 @@ export default function Reports() {
             </div>
 
             {/* Right Side Image */}
-            <div className="flex items-center justify-center">
+            <div className="flex flex-col items-center justify-center gap-4">
               <img
                 src="/images/handsDraw.png"
                 alt="Illustration"
                 className="w-full h-auto object-contain"
               />
+
+              {/* Test Toggle */}
+              <div className="flex items-start gap-3">
+                <label className="text-sm italic">Test Data</label>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={isTestData}
+                  onClick={() => setIsTestData(!isTestData)}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
+                    isTestData ? "bg-[#064E65]" : "bg-gray-300"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition ${
+                      isTestData ? "translate-x-5" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+              </div>
             </div>
           </div>
 

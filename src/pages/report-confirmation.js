@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 import Confetti from "react-confetti";
 import { useWindowSize } from "react-use";
 
@@ -7,12 +7,11 @@ export default function ReportConfirmation() {
   const API_ENDPOINT = process.env.NEXT_PUBLIC_API_ISSUE_ENDPOINT;
 
   const router = useRouter();
-  const { reportId, location, issue } = router.query;
+  const { reportId, location, issue, mode } = router.query;
+  const isTestMode = mode === "test";
   const { width, height } = useWindowSize();
   const [receiptCode, setReceiptCode] = useState("");
   const [reportCount, setReportCount] = useState(null);
-
-
 
   useEffect(() => {
     async function fetchReportCount() {
@@ -25,19 +24,16 @@ export default function ReportConfirmation() {
 
           console.log("Sending to API:", JSON.stringify({ location, issue }));
 
-
           const data = await response.json();
           if (response.ok) {
             setReportCount(data.issueCount);
             console.log("Received from API:", data.issueCount);
-
           } else {
             console.error("Failed to get report count:", data.error);
           }
         } catch (error) {
           console.error("Error fetching count:", error);
         }
-
       }
     }
 
@@ -46,11 +42,10 @@ export default function ReportConfirmation() {
       fetchReportCount();
     }
   }, [reportId, location, issue]);
-  
 
   const handleViewReport = () => {
     if (reportId) {
-      router.push(`/map?report=${reportId}`);
+      router.push(`/map?report=${reportId}&mode=${isTestMode ? "test" : "real"}`);
     } else {
       router.push("/map");
     }
@@ -76,7 +71,8 @@ export default function ReportConfirmation() {
               </>
             ) : (
               <>
-                <span className="font-semibold">{reportCount + 1}</span> people have also reported about this in your area.
+                <span className="font-semibold">{reportCount + 1}</span> people
+                have also reported about this in your area.
               </>
             )}
           </p>

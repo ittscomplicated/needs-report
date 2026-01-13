@@ -1,5 +1,5 @@
-import OrbitCarousel from "../components/OrbitCarousel";
 import Image from "next/image";
+import OrbitCarousel from "../components/OrbitCarousel";
 
 export default function HowItWorksPage() {
   return (
@@ -10,8 +10,8 @@ export default function HowItWorksPage() {
           <div className="md:w-1/2 space-y-4">
             <h1 className="text-5xl font-bold text-[#064E65]">How It Works</h1>
             <p className="text-lg text-gray-700 italic">
-              Discover how to submit a report, explore the map and see what
-              your community needs most.
+              Discover how to submit a report, explore the map and see what your
+              community needs most.
             </p>
           </div>
           <div className="md:w-1/2 flex justify-center">
@@ -31,7 +31,6 @@ export default function HowItWorksPage() {
       <div className="px-6 md:px-12">
         <OrbitCarousel />
       </div>
-     
     </div>
   );
 }

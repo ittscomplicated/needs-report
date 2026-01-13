@@ -1,5 +1,5 @@
-import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/router";
+import { useEffect, useRef, useState } from "react";
 import loader from "../utils/googleMapsLoader";
 
 const categoryColors = {
@@ -64,6 +64,13 @@ export default function MapLanding() {
   const [topIssues, setTopIssues] = useState([]);
   const [searchedLocation, setSearchedLocation] = useState("");
   const [showTestData, setShowTestData] = useState(false);
+
+  useEffect(() => {
+    if (!router.isReady) return;
+
+    const urlMode = (router.query.mode || "real").toLowerCase();
+    setShowTestData(urlMode === "test");
+  }, [router.isReady, router.query.mode]);
 
   const reportsRef = useRef([]);
   const lastCenterRef = useRef(null);
@@ -385,7 +392,23 @@ export default function MapLanding() {
               type="button"
               role="switch"
               aria-checked={showTestData}
-              onClick={() => setShowTestData((v) => !v)}
+              onClick={() => {
+                setShowTestData((v) => {
+                  const next = !v;
+                  const nextMode = next ? "test" : "real";
+
+                  router.replace(
+                    {
+                      pathname: router.pathname,
+                      query: { ...router.query, mode: nextMode },
+                    },
+                    undefined,
+                    { shallow: true }
+                  );
+
+                  return next;
+                });
+              }}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
                 showTestData ? "bg-[#064E65]" : "bg-gray-300"
               }`}
