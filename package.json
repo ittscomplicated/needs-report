@@ -36,8 +36,7 @@
   },
   "eslintConfig": {
     "extends": [
-      "react-app",
-      "react-app/jest"
+      "next/core-web-vitals"
     ]
   },
   "browserslist": {
@@ -55,6 +54,7 @@
   "devDependencies": {
     "autoprefixer": "^10.4.20",
     "eslint": "^9.22.0",
+    "eslint-config-next": "^16.1.1",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.15"
   }
