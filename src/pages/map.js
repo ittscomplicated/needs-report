@@ -134,7 +134,7 @@ export default function MapLanding() {
             }</p>
             <p><strong>Message:</strong> ${report.details || "No message"}</p>
             <p style="font-size:12px;color:#888;">${new Date(
-              report.timestamp
+              report.timestamp,
             ).toLocaleDateString()}</p>
           </div>
         `,
@@ -163,7 +163,7 @@ export default function MapLanding() {
   const filterAndRender = () => {
     const filtered = selectedCategory
       ? reportsRef.current.filter(
-          (r) => r.type?.toLowerCase() === selectedCategory
+          (r) => r.type?.toLowerCase() === selectedCategory,
         )
       : reportsRef.current;
 
@@ -175,7 +175,7 @@ export default function MapLanding() {
     if (!reportIdFromURL || !map || markers.length === 0) return;
 
     const targetReport = reportsRef.current.find(
-      (r) => r.report_id === reportIdFromURL
+      (r) => r.report_id === reportIdFromURL,
     );
     if (!targetReport) return;
 
@@ -205,7 +205,7 @@ export default function MapLanding() {
               targetReport.details || "No message"
             }</p>
             <p style="font-size:12px;color:#888;">${new Date(
-              targetReport.timestamp
+              targetReport.timestamp,
             ).toLocaleDateString()}</p>
           </div>
         `,
@@ -231,7 +231,7 @@ export default function MapLanding() {
             latLngBounds: { north: 85, south: -85, west: -180, east: 179.9999 },
             strictBounds: true,
           },
-        }
+        },
       );
       setMap(mapInstance);
 
@@ -340,75 +340,62 @@ export default function MapLanding() {
 
   return (
     <div className="min-h-screen px-4 py-6 flex flex-col items-center">
-      <h1 className="text-3xl font-bold text-[#064E65] mb-2">
+      <h1 className="text-3xl font-bold text-[#064E65] mb-2 text-center">
         Map of Reported Needs
       </h1>
-      <p className="text-gray-600 mb-4 text-center max-w-2xl">
+      <p className="text-center text-[#064E65] italic px-2 mb-6 max-w-2xl">
         Click a category to filter markers or click on a marker to see more.
       </p>
 
-      <div className="w-full max-w-6xl flex flex-col lg:flex-row gap-5 items-start justify-center">
-        <div
-          className="bg-white border border-gray-200 shadow-md rounded-lg p-4 w-full max-w-[300px] flex-shrink-0"
-          id="sidebar-panel"
-        >
+      <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-5 items-start">
+        {/* CATEGORY PANEL */}
+        <div className=" w-full lg:w-[300px] bg-white border border-gray-200 shadow-md rounded-lg p-4 lg:h-[calc(100vh-6rem)] overflow-y-auto flex flex-col">
+          {/* Location Search */}
           <input
             id="location-search"
             type="text"
             placeholder="Search for a location"
-            className="w-full max-w-md px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 mb-4 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-          <div className="bg-white border border-gray-200 shadow-md rounded-lg p-4 w-full max-w-[220px] mt-4">
-            <h2 className="text-md font-semibold text-[#064E65] mb-2">
-              Filter by Category
-            </h2>
-            <ul className="flex flex-wrap gap-2">
-              {Object.entries(categoryColors).map(([category, color]) => (
-                <li key={category}>
-                  <button
-                    type="button"
-                    className={`flex items-center space-x-2 px-3 py-1 rounded-md border transition-colors duration-150
-                      ${
-                        selectedCategory === category
-                          ? "bg-[#f5f5f5] border-gray-400"
-                          : "bg-white border-gray-200 hover:bg-gray-100"
-                      }
-                      shadow-sm focus:outline-none`}
-                    onClick={() => toggleCategory(category)}
-                  >
-                    <span
-                      className="inline-block w-4 h-4 rounded-full"
-                      style={{ backgroundColor: color }}
-                    ></span>
-                    <span className="capitalize font-medium">{category}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
+
+          {/* Category Filter */}
+          <h2 className="text-sm font-semibold text-[#064E65] mb-3">
+            Filter by Category
+          </h2>
+
+          <div className="flex flex-wrap lg:flex-col gap-2">
+            {Object.entries(categoryColors).map(([category, color]) => (
+              <button
+                key={category}
+                type="button"
+                onClick={() =>
+                  setSelectedCategory((prev) =>
+                    prev === category ? null : category,
+                  )
+                }
+                className={`flex items-center gap-2 px-3 py-2 rounded-md border text-sm transition
+              ${
+                selectedCategory === category
+                  ? "bg-gray-100 border-gray-400"
+                  : "bg-white border-gray-200 hover:bg-gray-100"
+              }`}
+              >
+                <span
+                  className="inline-block w-4 h-4 rounded-full"
+                  style={{ backgroundColor: color }}
+                />
+                <span className="capitalize">{category}</span>
+              </button>
+            ))}
           </div>
-          <div className="mt-4 flex items-center justify-between">
-            <span className="text-sm font-medium">Show test data</span>
+          {/* Test Data Toggle */}
+          <div className="mt-auto pt-3 border-t border-gray-200 flex items-center justify-between">
+            <span className="text-sm font-medium text-gray-700">Show test data</span>
             <button
               type="button"
               role="switch"
               aria-checked={showTestData}
-              onClick={() => {
-                setShowTestData((v) => {
-                  const next = !v;
-                  const nextMode = next ? "test" : "real";
-
-                  router.replace(
-                    {
-                      pathname: router.pathname,
-                      query: { ...router.query, mode: nextMode },
-                    },
-                    undefined,
-                    { shallow: true }
-                  );
-
-                  return next;
-                });
-              }}
+              onClick={() => setShowTestData((v) => !v)}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
                 showTestData ? "bg-[#064E65]" : "bg-gray-300"
               }`}
@@ -422,18 +409,10 @@ export default function MapLanding() {
           </div>
         </div>
 
-        <div
-          id="map"
-          className="w-full rounded-lg shadow-lg"
-          style={{
-            height:
-              typeof window !== "undefined" &&
-              document.getElementById("sidebar-panel")?.offsetHeight
-                ? document.getElementById("sidebar-panel").offsetHeight + "px"
-                : "100%",
-            minHeight: "300px",
-          }}
-        />
+        {/* MAP PANEL */}
+        <div className="flex-1 h-[calc(100vh-6rem)] rounded-lg shadow-lg overflow-hidden">
+          <div id="map" className="w-full h-full" />
+        </div>
       </div>
 
       {topIssues.length > 0 && (
