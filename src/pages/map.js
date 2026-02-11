@@ -53,6 +53,18 @@ const getPinIcon = (color) => {
   };
 };
 
+const normalizeLng = (lng) => {
+  let x = Number(lng);
+  while (x > 180) x -= 360;
+  while (x < -180) x += 360;
+  return x;
+};
+
+const normalizeLatLng = (lat, lng) => ({
+  lat: Number(lat),
+  lng: normalizeLng(lng),
+});
+
 export default function MapLanding() {
   const router = useRouter();
   const { report: reportIdFromURL } = router.query;
@@ -65,26 +77,22 @@ export default function MapLanding() {
   const [searchedLocation, setSearchedLocation] = useState("");
   const [showTestData, setShowTestData] = useState(false);
 
+  const reportsRef = useRef([]);
+  const lastCenterRef = useRef({ lat: 20, lng: 0 });
+  const lastZoomRef = useRef(2);
+  const didInitRef = useRef(false);
+  const applyingPlaceRef = useRef(false);
+  const mapInstanceRef = useRef(null);
+  const autocompleteRef = useRef(null);
+  const placeListenerRef = useRef(null);
+
+  const API_ENDPOINT = process.env.NEXT_PUBLIC_API_FETCH_ENDPOINT;
+
   useEffect(() => {
     if (!router.isReady) return;
-
     const urlMode = (router.query.mode || "real").toLowerCase();
     setShowTestData(urlMode === "test");
   }, [router.isReady, router.query.mode]);
-
-  const reportsRef = useRef([]);
-  const lastCenterRef = useRef(null);
-  const lastZoomRef = useRef(null);
-  const API_ENDPOINT = process.env.NEXT_PUBLIC_API_FETCH_ENDPOINT;
-
-  const captureView = () => {
-    if (!map) return;
-    const c = map.getCenter?.();
-    if (c) {
-      lastCenterRef.current = { lat: c.lat(), lng: c.lng() };
-      lastZoomRef.current = map.getZoom?.();
-    }
-  };
 
   const clearMarkers = () => {
     markers.forEach((marker) => marker.setMap(null));
@@ -96,9 +104,26 @@ export default function MapLanding() {
     if (!map) return;
 
     if (!Array.isArray(reports) || reports.length === 0) {
-      if (!preserveView) {
-        map.setCenter({ lat: 20, lng: 0 });
-        map.setZoom(2);
+      if (
+        preserveView &&
+        lastCenterRef.current &&
+        lastZoomRef.current != null
+      ) {
+        const c = map.getCenter?.();
+        const currentCenter = c ? { lat: c.lat(), lng: c.lng() } : null;
+
+        // Only restore if we're not at default position or if current position might be user-set
+        if (
+          currentCenter &&
+          (currentCenter.lat !== 20 || currentCenter.lng !== 0)
+        ) {
+          // Keep current position
+          return;
+        }
+        map.setCenter(
+          normalizeLatLng(lastCenterRef.current.lat, lastCenterRef.current.lng),
+        );
+        map.setZoom(lastZoomRef.current);
       }
       setMarkers([]);
       return;
@@ -125,17 +150,11 @@ export default function MapLanding() {
       const infoWindow = new window.google.maps.InfoWindow({
         content: `
           <div style="font-family:sans-serif;padding:12px 14px;max-width:260px;line-height:1.4;">
-            <h2 style="margin:0 0 8px;font-size:18px;color:#064E65;">${
-              report.type
-            }</h2>
+            <h2 style="margin:0 0 8px;font-size:18px;color:#064E65;">${report.type}</h2>
             <hr style="margin:0 0 8px;border:none;border-top:1px solid #ddd;" />
-            <p><strong>Location:</strong> ${
-              report.locationName || "Unknown"
-            }</p>
+            <p><strong>Location:</strong> ${report.locationName || "Unknown"}</p>
             <p><strong>Message:</strong> ${report.details || "No message"}</p>
-            <p style="font-size:12px;color:#888;">${new Date(
-              report.timestamp,
-            ).toLocaleDateString()}</p>
+            <p style="font-size:12px;color:#888;">${new Date(report.timestamp).toLocaleDateString()}</p>
           </div>
         `,
       });
@@ -150,25 +169,14 @@ export default function MapLanding() {
       bounds.extend(marker.getPosition());
     }
 
-    if (preserveView && lastCenterRef.current && lastZoomRef.current != null) {
-      map.setCenter(lastCenterRef.current);
-      map.setZoom(lastZoomRef.current);
+    if (preserveView) {
+      // Don't change the map view at all - keep whatever the user has set
+      // This is important after autocomplete selection
     } else if (newMarkers.length > 0) {
       map.fitBounds(bounds);
     }
 
     setMarkers(newMarkers);
-  };
-
-  const filterAndRender = () => {
-    const filtered = selectedCategory
-      ? reportsRef.current.filter(
-          (r) => r.type?.toLowerCase() === selectedCategory,
-        )
-      : reportsRef.current;
-
-    captureView();
-    renderMarkers(filtered, { preserveView: true });
   };
 
   const zoomToReportIfNeeded = () => {
@@ -194,19 +202,11 @@ export default function MapLanding() {
       const infoWindow = new window.google.maps.InfoWindow({
         content: `
           <div style="font-family:sans-serif;padding:12px 14px;max-width:260px;line-height:1.4;">
-            <h2 style="margin:0 0 8px;font-size:18px;color:#064E65;">${
-              targetReport.type
-            }</h2>
+            <h2 style="margin:0 0 8px;font-size:18px;color:#064E65;">${targetReport.type}</h2>
             <hr style="margin:0 0 8px;border:none;border-top:1px solid #ddd;" />
-            <p><strong>Location:</strong> ${
-              targetReport.locationName || "Unknown"
-            }</p>
-            <p><strong>Message:</strong> ${
-              targetReport.details || "No message"
-            }</p>
-            <p style="font-size:12px;color:#888;">${new Date(
-              targetReport.timestamp,
-            ).toLocaleDateString()}</p>
+            <p><strong>Location:</strong> ${targetReport.locationName || "Unknown"}</p>
+            <p><strong>Message:</strong> ${targetReport.details || "No message"}</p>
+            <p style="font-size:12px;color:#888;">${new Date(targetReport.timestamp).toLocaleDateString()}</p>
           </div>
         `,
       });
@@ -216,58 +216,125 @@ export default function MapLanding() {
     }
   };
 
+  const fetchTopIssues = async (location) => {
+    const locationFragment = location.toLowerCase().trim().replace(/\s+/g, "-");
+
+    try {
+      const res = await fetch(process.env.NEXT_PUBLIC_API_ISSUE_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ locationFragment }),
+      });
+
+      if (!res.ok) {
+        setTopIssues([]);
+        setSearchedLocation("");
+        return;
+      }
+
+      const data = await res.json();
+
+      if (Array.isArray(data.topIssues) && data.topIssues.length > 0) {
+        setTopIssues(data.topIssues);
+        setSearchedLocation(location);
+      } else {
+        setTopIssues([]);
+        setSearchedLocation("");
+      }
+    } catch (error) {
+      console.error("Error fetching top issues:", error);
+      setTopIssues([]);
+      setSearchedLocation("");
+    }
+  };
+
+  // Initialize map
   useEffect(() => {
+    if (didInitRef.current) return;
+    didInitRef.current = true;
+
+    let placeListener;
+
     loader.load().then(() => {
       if (!window?.google) return;
 
-      const mapInstance = new window.google.maps.Map(
-        document.getElementById("map"),
-        {
-          center: { lat: 40.7128, lng: -74.006 },
-          zoom: 2,
-          styles: softCivicHarmony,
-          gestureHandling: "greedy",
-          restriction: {
-            latLngBounds: { north: 85, south: -85, west: -180, east: 179.9999 },
-            strictBounds: true,
-          },
+      const mapEl = document.getElementById("map");
+      if (!mapEl) return;
+
+      const mapInstance = new window.google.maps.Map(mapEl, {
+        center: { lat: 20, lng: 0 },
+        zoom: 2,
+        styles: softCivicHarmony,
+        gestureHandling: "greedy",
+        restriction: {
+          latLngBounds: { north: 85, south: -85, west: -180, east: 180 },
+          strictBounds: true,
         },
-      );
+      });
+
       setMap(mapInstance);
 
+      // Setup autocomplete
       const input = document.getElementById("location-search");
-      if (input) {
-        const autocomplete = new window.google.maps.places.Autocomplete(input, {
-          fields: ["geometry", "formatted_address"],
+      if (!input) return;
+
+      const autocomplete = new window.google.maps.places.Autocomplete(input, {
+        fields: ["geometry", "formatted_address"],
+      });
+
+      placeListener = autocomplete.addListener("place_changed", () => {
+        const place = autocomplete.getPlace();
+        const loc = place?.geometry?.location;
+
+        if (!loc) return;
+        if (applyingPlaceRef.current) return;
+
+        applyingPlaceRef.current = true;
+
+        const formatted = place.formatted_address || "";
+        const target = normalizeLatLng(loc.lat(), loc.lng());
+
+        // Use setCenter + setZoom (more deterministic than panTo)
+        mapInstance.setCenter(target);
+        mapInstance.setZoom(10);
+
+        // Save immediately
+        lastCenterRef.current = target;
+        lastZoomRef.current = 10;
+
+        // Force-center again after the map settles (handles resize/layout side effects)
+        window.google.maps.event.addListenerOnce(mapInstance, "idle", () => {
+          // Re-apply target in case Google shifted it
+          mapInstance.setCenter(target);
+
+          // Update refs from what we want, not what Google drifted to
+          lastCenterRef.current = target;
+          lastZoomRef.current = mapInstance.getZoom?.() ?? 10;
+
+          applyingPlaceRef.current = false;
         });
 
-        autocomplete.addListener("place_changed", () => {
-          const place = autocomplete.getPlace();
-          if (!place?.geometry) return;
-
-          const lat = place.geometry.location.lat();
-          const lng = place.geometry.location.lng();
-          const formatted = place.formatted_address;
-
-          mapInstance.panTo({ lat, lng });
-          mapInstance.setZoom(10);
-          fetchTopIssues(formatted);
-        });
-      }
+        fetchTopIssues(formatted);
+      });
     });
+
+    return () => {
+      if (placeListener) {
+        window.google?.maps?.event?.removeListener(placeListener);
+      }
+    };
   }, []);
 
+  // Fetch and render reports
   useEffect(() => {
     if (!map) return;
     const mode = showTestData ? "test" : "real";
 
     (async () => {
       try {
-        captureView();
-
         const res = await fetch(`${API_ENDPOINT}?mode=${mode}`);
         if (!res.ok) {
-          console.error("Fetch failed:", res.status, await res.text());
+          console.error("Fetch failed:", res.status);
           reportsRef.current = [];
           renderMarkers([], { preserveView: true });
           return;
@@ -290,53 +357,55 @@ export default function MapLanding() {
     })();
   }, [map, showTestData, selectedCategory]);
 
+  // Zoom to specific report from URL
   useEffect(() => {
     if (markers.length > 0 && reportIdFromURL && map) {
       zoomToReportIfNeeded();
     }
   }, [markers, reportIdFromURL, map]);
 
+  // Sync map height with sidebar
   useEffect(() => {
     if (typeof window === "undefined") return;
+    if (!map) return;
+
     const mapDiv = document.getElementById("map");
     const sidebar = document.getElementById("sidebar-panel");
     if (!mapDiv || !sidebar) return;
 
     const ro = new ResizeObserver((entries) => {
       for (const entry of entries) {
+        // Don't fight the camera while autocomplete is applying a place
+        if (applyingPlaceRef.current) return;
+
         mapDiv.style.height = `${entry.contentRect.height}px`;
+
+        // Tell Google Maps it must re-measure its container
+        window.google?.maps?.event?.trigger(map, "resize");
+
+        // Then restore whatever the last "good" view was
+        const c = lastCenterRef.current;
+        const z = lastZoomRef.current;
+
+        if (c && typeof z === "number") {
+          map.setCenter(c);
+          map.setZoom(z);
+        }
       }
     });
+
     ro.observe(sidebar);
     mapDiv.style.height = `${sidebar.offsetHeight}px`;
 
-    return () => ro.disconnect();
-  }, []);
-
-  const toggleCategory = (cat) => {
-    setSelectedCategory((prev) => (prev === cat ? null : cat));
-  };
-
-  const fetchTopIssues = async (location) => {
-    const formattedLocation = location.toLowerCase().replace(/\s+/g, "-");
-    try {
-      const res = await fetch(process.env.NEXT_PUBLIC_API_ISSUE_ENDPOINT, {
-        method: "POST",
-        body: JSON.stringify({ location: formattedLocation }),
-      });
-
-      const data = await res.json();
-      if (data?.topIssues?.length) {
-        setTopIssues(data.topIssues);
-        setSearchedLocation(location);
-      } else {
-        setTopIssues([]);
-        setSearchedLocation("");
-      }
-    } catch (error) {
-      console.error("Error fetching top issues:", error);
+    // Same treatment for the initial sizing
+    window.google?.maps?.event?.trigger(map, "resize");
+    if (lastCenterRef.current && typeof lastZoomRef.current === "number") {
+      map.setCenter(lastCenterRef.current);
+      map.setZoom(lastZoomRef.current);
     }
-  };
+
+    return () => ro.disconnect();
+  }, [map]);
 
   return (
     <div className="min-h-screen px-4 py-6 flex flex-col items-center">
@@ -349,7 +418,10 @@ export default function MapLanding() {
 
       <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-5 items-start">
         {/* CATEGORY PANEL */}
-        <div className=" w-full lg:w-[300px] bg-white border border-gray-200 shadow-md rounded-lg p-4 lg:h-[calc(100vh-6rem)] overflow-y-auto flex flex-col">
+        <div
+          id="sidebar-panel"
+          className="w-full lg:w-[300px] bg-white border border-gray-200 shadow-md rounded-lg p-4 lg:h-[calc(100vh-6rem)] overflow-y-auto flex flex-col"
+        >
           {/* Location Search */}
           <input
             id="location-search"
@@ -373,12 +445,11 @@ export default function MapLanding() {
                     prev === category ? null : category,
                   )
                 }
-                className={`flex items-center gap-2 px-3 py-2 rounded-md border text-sm transition
-              ${
-                selectedCategory === category
-                  ? "bg-gray-100 border-gray-400"
-                  : "bg-white border-gray-200 hover:bg-gray-100"
-              }`}
+                className={`flex items-center gap-2 px-3 py-2 rounded-md border text-sm transition ${
+                  selectedCategory === category
+                    ? "bg-gray-100 border-gray-400"
+                    : "bg-white border-gray-200 hover:bg-gray-100"
+                }`}
               >
                 <span
                   className="inline-block w-4 h-4 rounded-full"
@@ -388,9 +459,12 @@ export default function MapLanding() {
               </button>
             ))}
           </div>
+
           {/* Test Data Toggle */}
           <div className="mt-auto pt-3 border-t border-gray-200 flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-700">Show test data</span>
+            <span className="text-sm font-medium text-gray-700">
+              Show test data
+            </span>
             <button
               type="button"
               role="switch"
@@ -410,11 +484,12 @@ export default function MapLanding() {
         </div>
 
         {/* MAP PANEL */}
-        <div className="flex-1 h-[calc(100vh-6rem)] rounded-lg shadow-lg overflow-hidden">
+        <div className="flex-1 rounded-lg shadow-lg overflow-hidden h-[70vh] min-h-[420px] max-h-[800px]">
           <div id="map" className="w-full h-full" />
         </div>
       </div>
 
+      {/* Top Issues */}
       {topIssues.length > 0 && (
         <div className="mt-8 w-full max-w-4xl bg-white shadow-lg rounded-lg p-6 border border-gray-200">
           <h2 className="text-xl font-semibold text-[#064E65] mb-4">

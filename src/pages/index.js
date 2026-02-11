@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useRef } from "react";
 import OrbitCarousel from "../components/OrbitCarousel";
 
@@ -76,6 +77,16 @@ export default function HomePage() {
             Report To Rebuild
           </h2>
 
+          {/* Button */}
+          <div className="flex justify-center md:justify-end">
+            <Link
+              href="/reports"
+              className="bg-[#064E65] text-white px-4 py-2 rounded-full text-base font-semibold hover:bg-[#043B4D] transition"
+            >
+              Create Report
+            </Link>
+          </div>
+
           <div className="mb-8 bg-blue/20 backdrop-blur-sm rounded-2xl p-6 text-center">
             <p
               className="text-lg italic text-gray-700"
@@ -85,15 +96,6 @@ export default function HomePage() {
               communities are asking for around the world.
             </p>
           </div>
-
-          <button
-            type="button"
-            onClick={scrollToHowItWorks}
-            className="px-10 py-3 bg-[#C8C000] text-[#064E65] rounded-full text-lg shadow-lg hover:bg-[#A2D6F9] transition font-semibold"
-            style={{ fontFamily: "'Poppins', Arial, sans-serif" }}
-          >
-            How It Works
-          </button>
         </div>
       </section>
 
@@ -101,8 +103,7 @@ export default function HomePage() {
       <section
         ref={(el) => (sectionsRef.current[0] = el)}
         className="max-w-4xl mx-auto px-6 md:px-12 py-16 transform transition duration-1000 opacity-0 translate-y-8"
-      >
-      </section>
+      ></section>
 
       {/* 3) HOW IT WORKS SECTION */}
       <section
