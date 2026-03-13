@@ -13,6 +13,37 @@ const categoryColors = {
   other: "#D6D6D6",
 };
 
+const buildInfoWindowContent = (report, color) => {
+  const locationName = report.locationName || "Unknown";
+  const details = report.details || "No message";
+  const formattedDate = new Date(report.timestamp).toLocaleDateString(
+    "en-US",
+    { month: "long", day: "numeric", year: "numeric" }
+  );
+
+  return `
+          <div style="font-family:Arial,sans-serif;width:260px;overflow:hidden;">
+            <div style="background:#064E65;padding:14px 16px 12px;display:flex;align-items:center;gap:8px;">
+              <span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:${color};flex-shrink:0;box-shadow:0 0 0 2px rgba(255,255,255,0.3);"></span>
+              <span style="font-size:15px;font-weight:700;color:#C3CD00;text-transform:capitalize;letter-spacing:0.02em;">${report.type}</span>
+            </div>
+            <div style="padding:12px 16px 14px;background:#fff;">
+              <div style="margin-bottom:10px;">
+                <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#9ca3af;margin-bottom:2px;">Location</div>
+                <div style="font-size:13px;color:#1f2937;">${locationName}</div>
+              </div>
+              <div style="margin-bottom:10px;">
+                <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#9ca3af;margin-bottom:2px;">Message</div>
+                <div style="font-size:13px;color:#1f2937;line-height:1.5;">${details}</div>
+              </div>
+              <div style="font-size:11px;color:#9ca3af;border-top:1px solid #f3f4f6;padding-top:8px;">
+                ${formattedDate}
+              </div>
+            </div>
+          </div>
+        `;
+};
+
 const baseStyles = [
   {
     featureType: "administrative",
@@ -187,27 +218,7 @@ export default function MapLanding() {
       });
 
       const infoWindow = new window.google.maps.InfoWindow({
-        content: `
-          <div style="font-family:Arial,sans-serif;width:260px;overflow:hidden;">
-            <div style="background:#064E65;padding:14px 16px 12px;display:flex;align-items:center;gap:8px;">
-              <span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:${color};flex-shrink:0;box-shadow:0 0 0 2px rgba(255,255,255,0.3);"></span>
-              <span style="font-size:15px;font-weight:700;color:#C3CD00;text-transform:capitalize;letter-spacing:0.02em;">${report.type}</span>
-            </div>
-            <div style="padding:12px 16px 14px;background:#fff;">
-              <div style="margin-bottom:10px;">
-                <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#9ca3af;margin-bottom:2px;">Location</div>
-                <div style="font-size:13px;color:#1f2937;">${report.locationName || "Unknown"}</div>
-              </div>
-              <div style="margin-bottom:10px;">
-                <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#9ca3af;margin-bottom:2px;">Message</div>
-                <div style="font-size:13px;color:#1f2937;line-height:1.5;">${report.details || "No message"}</div>
-              </div>
-              <div style="font-size:11px;color:#9ca3af;border-top:1px solid #f3f4f6;padding-top:8px;">
-                ${new Date(report.timestamp).toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"})}
-              </div>
-            </div>
-          </div>
-        `,
+        content: buildInfoWindowContent(report, color),
       });
 
       marker.addListener("click", () => {
