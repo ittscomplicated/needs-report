@@ -20,3 +20,46 @@ h1 {
   color: #333;
 }
 
+/* Map type control (Map / Satellite buttons) */
+.gm-style-mtc button {
+  color: #064e65 !important;
+  font-family: Arial, sans-serif !important;
+  font-size: 13px !important;
+}
+.gm-style-mtc button:focus {
+  outline: 2px solid #c3cd00 !important;
+}
+
+/* Google Maps InfoWindow overrides */
+.gm-style-iw-c {
+  padding: 0 !important;
+  border-radius: 12px !important;
+  box-shadow: 0 6px 28px rgba(0, 0, 0, 0.18) !important;
+  overflow: hidden !important;
+}
+.gm-style-iw-d {
+  overflow: hidden !important;
+  padding: 0 !important;
+}
+.gm-style-iw-t::after {
+  background: linear-gradient(
+    45deg,
+    #064e65 50%,
+    rgba(6, 78, 101, 0) 51%,
+    rgba(6, 78, 101, 0) 100%
+  ) !important;
+}
+.gm-ui-hover-effect {
+  opacity: 1 !important;
+  top: 4px !important;
+  right: 4px !important;
+  width: 28px !important;
+  height: 28px !important;
+}
+.gm-ui-hover-effect > span {
+  background-color: #c3cd00 !important;
+  width: 16px !important;
+  height: 16px !important;
+  margin: 6px !important;
+}
+

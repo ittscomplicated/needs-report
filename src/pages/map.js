@@ -13,12 +13,7 @@ const categoryColors = {
   other: "#D6D6D6",
 };
 
-const softCivicHarmony = [
-  {
-    featureType: "all",
-    elementType: "labels.text.fill",
-    stylers: [{ color: "#222222" }],
-  },
+const baseStyles = [
   {
     featureType: "administrative",
     elementType: "geometry.stroke",
@@ -39,6 +34,34 @@ const softCivicHarmony = [
     elementType: "geometry",
     stylers: [{ color: "#A2D6F9" }],
   },
+];
+
+const softCivicHarmony = [
+  {
+    featureType: "all",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#064E65" }],
+  },
+  {
+    featureType: "all",
+    elementType: "labels.text.stroke",
+    stylers: [{ color: "#ffffff" }, { weight: 2 }],
+  },
+  ...baseStyles,
+];
+
+const softCivicHarmonySatellite = [
+  {
+    featureType: "all",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#ffffff" }],
+  },
+  {
+    featureType: "all",
+    elementType: "labels.text.stroke",
+    stylers: [{ color: "#064E65" }, { weight: 3 }],
+  },
+  ...baseStyles,
 ];
 
 const getPinIcon = (color) => {
@@ -72,7 +95,7 @@ export default function MapLanding() {
   const [map, setMap] = useState(null);
   const [markers, setMarkers] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [activeInfoWindow, setActiveInfoWindow] = useState(null);
+  const activeInfoWindowRef = useRef(null);
   const [topIssues, setTopIssues] = useState([]);
   const [searchedLocation, setSearchedLocation] = useState("");
   const [showTestData, setShowTestData] = useState(false);
@@ -87,6 +110,22 @@ export default function MapLanding() {
   const placeListenerRef = useRef(null);
 
   const API_ENDPOINT = process.env.NEXT_PUBLIC_API_FETCH_ENDPOINT;
+
+  const panToShowInfoWindow = (iw, mapInst) => {
+    window.google.maps.event.addListenerOnce(iw, "domready", () => {
+      const iwEl = document.querySelector(".gm-style-iw-c");
+      const mapEl = document.getElementById("map");
+      if (!iwEl || !mapEl) return;
+      const iwRect = iwEl.getBoundingClientRect();
+      const mapRect = mapEl.getBoundingClientRect();
+      // Add buffer for the Map/Satellite controls that sit at the top of the map
+      const controlsHeight = 60;
+      const clearanceTop = mapRect.top + controlsHeight;
+      if (iwRect.top < clearanceTop) {
+        mapInst.panBy(0, -(clearanceTop - iwRect.top + 16));
+      }
+    });
+  };
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -149,20 +188,33 @@ export default function MapLanding() {
 
       const infoWindow = new window.google.maps.InfoWindow({
         content: `
-          <div style="font-family:sans-serif;padding:12px 14px;max-width:260px;line-height:1.4;">
-            <h2 style="margin:0 0 8px;font-size:18px;color:#064E65;">${report.type}</h2>
-            <hr style="margin:0 0 8px;border:none;border-top:1px solid #ddd;" />
-            <p><strong>Location:</strong> ${report.locationName || "Unknown"}</p>
-            <p><strong>Message:</strong> ${report.details || "No message"}</p>
-            <p style="font-size:12px;color:#888;">${new Date(report.timestamp).toLocaleDateString()}</p>
+          <div style="font-family:Arial,sans-serif;width:260px;overflow:hidden;">
+            <div style="background:#064E65;padding:14px 16px 12px;display:flex;align-items:center;gap:8px;">
+              <span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:${color};flex-shrink:0;box-shadow:0 0 0 2px rgba(255,255,255,0.3);"></span>
+              <span style="font-size:15px;font-weight:700;color:#C3CD00;text-transform:capitalize;letter-spacing:0.02em;">${report.type}</span>
+            </div>
+            <div style="padding:12px 16px 14px;background:#fff;">
+              <div style="margin-bottom:10px;">
+                <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#9ca3af;margin-bottom:2px;">Location</div>
+                <div style="font-size:13px;color:#1f2937;">${report.locationName || "Unknown"}</div>
+              </div>
+              <div style="margin-bottom:10px;">
+                <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#9ca3af;margin-bottom:2px;">Message</div>
+                <div style="font-size:13px;color:#1f2937;line-height:1.5;">${report.details || "No message"}</div>
+              </div>
+              <div style="font-size:11px;color:#9ca3af;border-top:1px solid #f3f4f6;padding-top:8px;">
+                ${new Date(report.timestamp).toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"})}
+              </div>
+            </div>
           </div>
         `,
       });
 
       marker.addListener("click", () => {
-        if (activeInfoWindow) activeInfoWindow.close();
+        if (activeInfoWindowRef.current) activeInfoWindowRef.current.close();
         infoWindow.open(map, marker);
-        setActiveInfoWindow(infoWindow);
+        activeInfoWindowRef.current = infoWindow;
+        panToShowInfoWindow(infoWindow, map);
       });
 
       newMarkers.push(marker);
@@ -199,20 +251,36 @@ export default function MapLanding() {
       map.panTo(targetMarker.getPosition());
       map.setZoom(15);
 
+      const targetColor =
+        categoryColors[targetReport.type?.toLowerCase()] || categoryColors.other;
       const infoWindow = new window.google.maps.InfoWindow({
         content: `
-          <div style="font-family:sans-serif;padding:12px 14px;max-width:260px;line-height:1.4;">
-            <h2 style="margin:0 0 8px;font-size:18px;color:#064E65;">${targetReport.type}</h2>
-            <hr style="margin:0 0 8px;border:none;border-top:1px solid #ddd;" />
-            <p><strong>Location:</strong> ${targetReport.locationName || "Unknown"}</p>
-            <p><strong>Message:</strong> ${targetReport.details || "No message"}</p>
-            <p style="font-size:12px;color:#888;">${new Date(targetReport.timestamp).toLocaleDateString()}</p>
+          <div style="font-family:Arial,sans-serif;width:260px;overflow:hidden;">
+            <div style="background:#064E65;padding:14px 16px 12px;display:flex;align-items:center;gap:8px;">
+              <span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:${targetColor};flex-shrink:0;box-shadow:0 0 0 2px rgba(255,255,255,0.3);"></span>
+              <span style="font-size:15px;font-weight:700;color:#C3CD00;text-transform:capitalize;letter-spacing:0.02em;">${targetReport.type}</span>
+            </div>
+            <div style="padding:12px 16px 14px;background:#fff;">
+              <div style="margin-bottom:10px;">
+                <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#9ca3af;margin-bottom:2px;">Location</div>
+                <div style="font-size:13px;color:#1f2937;">${targetReport.locationName || "Unknown"}</div>
+              </div>
+              <div style="margin-bottom:10px;">
+                <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#9ca3af;margin-bottom:2px;">Message</div>
+                <div style="font-size:13px;color:#1f2937;line-height:1.5;">${targetReport.details || "No message"}</div>
+              </div>
+              <div style="font-size:11px;color:#9ca3af;border-top:1px solid #f3f4f6;padding-top:8px;">
+                ${new Date(targetReport.timestamp).toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"})}
+              </div>
+            </div>
           </div>
         `,
       });
 
+      if (activeInfoWindowRef.current) activeInfoWindowRef.current.close();
       infoWindow.open(map, targetMarker);
-      setActiveInfoWindow(infoWindow);
+      activeInfoWindowRef.current = infoWindow;
+      panToShowInfoWindow(infoWindow, map);
     }
   };
 
@@ -266,6 +334,7 @@ export default function MapLanding() {
         zoom: 2,
         styles: softCivicHarmony,
         gestureHandling: "greedy",
+        streetViewControl: false,
         restriction: {
           latLngBounds: { north: 85, south: -85, west: -180, east: 180 },
           strictBounds: true,
@@ -273,6 +342,20 @@ export default function MapLanding() {
       });
 
       setMap(mapInstance);
+
+      mapInstance.addListener("click", () => {
+        if (activeInfoWindowRef.current) {
+          activeInfoWindowRef.current.close();
+          activeInfoWindowRef.current = null;
+        }
+      });
+
+      mapInstance.addListener("maptypeid_changed", () => {
+        const isSatellite = mapInstance.getMapTypeId() !== "roadmap";
+        mapInstance.setOptions({
+          styles: isSatellite ? softCivicHarmonySatellite : softCivicHarmony,
+        });
+      });
 
       // Setup autocomplete
       const input = document.getElementById("location-search");
@@ -364,40 +447,28 @@ export default function MapLanding() {
     }
   }, [markers, reportIdFromURL, map]);
 
-  // Sync map height with sidebar
+  // Notify Google Maps when the map panel resizes so it re-measures correctly
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (!map) return;
 
-    const mapDiv = document.getElementById("map");
-    const sidebar = document.getElementById("sidebar-panel");
-    if (!mapDiv || !sidebar) return;
+    const mapPanel = document.getElementById("map-panel");
+    if (!mapPanel) return;
 
-    const ro = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        // Don't fight the camera while autocomplete is applying a place
-        if (applyingPlaceRef.current) return;
-
-        mapDiv.style.height = `${entry.contentRect.height}px`;
-
-        // Tell Google Maps it must re-measure its container
-        window.google?.maps?.event?.trigger(map, "resize");
-
-        // Then restore whatever the last "good" view was
-        const c = lastCenterRef.current;
-        const z = lastZoomRef.current;
-
-        if (c && typeof z === "number") {
-          map.setCenter(c);
-          map.setZoom(z);
-        }
+    const ro = new ResizeObserver(() => {
+      if (applyingPlaceRef.current) return;
+      window.google?.maps?.event?.trigger(map, "resize");
+      const c = lastCenterRef.current;
+      const z = lastZoomRef.current;
+      if (c && typeof z === "number") {
+        map.setCenter(c);
+        map.setZoom(z);
       }
     });
 
-    ro.observe(sidebar);
-    mapDiv.style.height = `${sidebar.offsetHeight}px`;
+    ro.observe(mapPanel);
 
-    // Same treatment for the initial sizing
+    // Initial trigger
     window.google?.maps?.event?.trigger(map, "resize");
     if (lastCenterRef.current && typeof lastZoomRef.current === "number") {
       map.setCenter(lastCenterRef.current);
@@ -420,14 +491,14 @@ export default function MapLanding() {
         {/* CATEGORY PANEL */}
         <div
           id="sidebar-panel"
-          className="w-full lg:w-[300px] bg-white border border-gray-200 shadow-md rounded-lg p-4 lg:h-[calc(100vh-6rem)] overflow-y-auto flex flex-col"
+          className="w-full lg:w-[300px] bg-white border border-gray-200 shadow-md rounded-lg p-4 lg:h-[70vh] lg:max-h-[800px] overflow-y-auto flex flex-col"
         >
           {/* Location Search */}
           <input
             id="location-search"
             type="text"
             placeholder="Search for a location"
-            className="w-full px-4 py-2 mb-4 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 mb-4 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-[#C3CD00]"
           />
 
           {/* Category Filter */}
@@ -447,7 +518,7 @@ export default function MapLanding() {
                 }
                 className={`flex items-center gap-2 px-3 py-2 rounded-md border text-sm transition ${
                   selectedCategory === category
-                    ? "bg-gray-100 border-gray-400"
+                    ? "bg-[#EEF7F9] border-[#064E65] border-2"
                     : "bg-white border-gray-200 hover:bg-gray-100"
                 }`}
               >
@@ -484,7 +555,7 @@ export default function MapLanding() {
         </div>
 
         {/* MAP PANEL */}
-        <div className="flex-1 rounded-lg shadow-lg overflow-hidden h-[70vh] min-h-[420px] max-h-[800px]">
+        <div id="map-panel" className="flex-1 rounded-lg shadow-lg overflow-hidden h-[70vh] min-h-[420px] max-h-[800px]">
           <div id="map" className="w-full h-full" />
         </div>
       </div>
