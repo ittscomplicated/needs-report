@@ -153,7 +153,7 @@ export default function MapLanding() {
       const controlsHeight = 60;
       const clearanceTop = mapRect.top + controlsHeight;
       if (iwRect.top < clearanceTop) {
-        mapInst.panBy(0, -(clearanceTop - iwRect.top + 16));
+        mapInst.panBy(0, clearanceTop - iwRect.top + 16);
       }
     });
   };
