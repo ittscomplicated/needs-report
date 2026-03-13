@@ -266,28 +266,85 @@ export default function MapLanding() {
 
       const targetColor =
         categoryColors[targetReport.type?.toLowerCase()] || categoryColors.other;
+
+      // Build InfoWindow content using DOM nodes to avoid XSS from untrusted data.
+      const container = document.createElement("div");
+      container.style.cssText =
+        "font-family:Arial,sans-serif;width:260px;overflow:hidden;";
+
+      const header = document.createElement("div");
+      header.style.cssText =
+        "background:#064E65;padding:14px 16px 12px;display:flex;align-items:center;gap:8px;";
+
+      const dot = document.createElement("span");
+      dot.style.cssText =
+        "display:inline-block;width:11px;height:11px;border-radius:50%;flex-shrink:0;box-shadow:0 0 0 2px rgba(255,255,255,0.3);";
+      dot.style.background = targetColor;
+
+      const typeSpan = document.createElement("span");
+      typeSpan.style.cssText =
+        "font-size:15px;font-weight:700;color:#C3CD00;text-transform:capitalize;letter-spacing:0.02em;";
+      typeSpan.textContent = targetReport.type || "";
+
+      header.appendChild(dot);
+      header.appendChild(typeSpan);
+
+      const body = document.createElement("div");
+      body.style.cssText =
+        "padding:12px 16px 14px;background:#fff;";
+
+      // Location section
+      const locationSection = document.createElement("div");
+      locationSection.style.cssText = "margin-bottom:10px;";
+
+      const locationLabel = document.createElement("div");
+      locationLabel.style.cssText =
+        "font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#9ca3af;margin-bottom:2px;";
+      locationLabel.textContent = "Location";
+
+      const locationValue = document.createElement("div");
+      locationValue.style.cssText = "font-size:13px;color:#1f2937;";
+      locationValue.textContent = targetReport.locationName || "Unknown";
+
+      locationSection.appendChild(locationLabel);
+      locationSection.appendChild(locationValue);
+
+      // Message section
+      const messageSection = document.createElement("div");
+      messageSection.style.cssText = "margin-bottom:10px;";
+
+      const messageLabel = document.createElement("div");
+      messageLabel.style.cssText =
+        "font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#9ca3af;margin-bottom:2px;";
+      messageLabel.textContent = "Message";
+
+      const messageValue = document.createElement("div");
+      messageValue.style.cssText =
+        "font-size:13px;color:#1f2937;line-height:1.5;";
+      messageValue.textContent = targetReport.details || "No message";
+
+      messageSection.appendChild(messageLabel);
+      messageSection.appendChild(messageValue);
+
+      // Date section
+      const dateDiv = document.createElement("div");
+      dateDiv.style.cssText =
+        "font-size:11px;color:#9ca3af;border-top:1px solid #f3f4f6;padding-top:8px;";
+      const formattedDate = new Date(targetReport.timestamp).toLocaleDateString(
+        "en-US",
+        { month: "long", day: "numeric", year: "numeric" },
+      );
+      dateDiv.textContent = formattedDate;
+
+      body.appendChild(locationSection);
+      body.appendChild(messageSection);
+      body.appendChild(dateDiv);
+
+      container.appendChild(header);
+      container.appendChild(body);
+
       const infoWindow = new window.google.maps.InfoWindow({
-        content: `
-          <div style="font-family:Arial,sans-serif;width:260px;overflow:hidden;">
-            <div style="background:#064E65;padding:14px 16px 12px;display:flex;align-items:center;gap:8px;">
-              <span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:${targetColor};flex-shrink:0;box-shadow:0 0 0 2px rgba(255,255,255,0.3);"></span>
-              <span style="font-size:15px;font-weight:700;color:#C3CD00;text-transform:capitalize;letter-spacing:0.02em;">${targetReport.type}</span>
-            </div>
-            <div style="padding:12px 16px 14px;background:#fff;">
-              <div style="margin-bottom:10px;">
-                <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#9ca3af;margin-bottom:2px;">Location</div>
-                <div style="font-size:13px;color:#1f2937;">${targetReport.locationName || "Unknown"}</div>
-              </div>
-              <div style="margin-bottom:10px;">
-                <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#9ca3af;margin-bottom:2px;">Message</div>
-                <div style="font-size:13px;color:#1f2937;line-height:1.5;">${targetReport.details || "No message"}</div>
-              </div>
-              <div style="font-size:11px;color:#9ca3af;border-top:1px solid #f3f4f6;padding-top:8px;">
-                ${new Date(targetReport.timestamp).toLocaleDateString("en-US",{month:"long",day:"numeric",year:"numeric"})}
-              </div>
-            </div>
-          </div>
-        `,
+        content: container,
       });
 
       if (activeInfoWindowRef.current) activeInfoWindowRef.current.close();
