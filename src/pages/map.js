@@ -333,6 +333,8 @@ export default function MapLanding() {
     didInitRef.current = true;
 
     let placeListener;
+    let mapTypeIdListener;
+    let mapClickListener;
 
     loader.load().then(() => {
       if (!window?.google) return;
@@ -354,14 +356,14 @@ export default function MapLanding() {
 
       setMap(mapInstance);
 
-      mapInstance.addListener("click", () => {
+      mapClickListener = mapInstance.addListener("click", () => {
         if (activeInfoWindowRef.current) {
           activeInfoWindowRef.current.close();
           activeInfoWindowRef.current = null;
         }
       });
 
-      mapInstance.addListener("maptypeid_changed", () => {
+      mapTypeIdListener = mapInstance.addListener("maptypeid_changed", () => {
         const isSatellite = mapInstance.getMapTypeId() !== "roadmap";
         mapInstance.setOptions({
           styles: isSatellite ? softCivicHarmonySatellite : softCivicHarmony,
@@ -413,6 +415,12 @@ export default function MapLanding() {
     });
 
     return () => {
+      if (mapClickListener) {
+        window.google?.maps?.event?.removeListener(mapClickListener);
+      }
+      if (mapTypeIdListener) {
+        window.google?.maps?.event?.removeListener(mapTypeIdListener);
+      }
       if (placeListener) {
         window.google?.maps?.event?.removeListener(placeListener);
       }
