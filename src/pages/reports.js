@@ -1,7 +1,7 @@
-import { useRouter } from "next/router";
-import LocationAutocomplete from "../components/LocationAutocomplete";
-import { useEffect, useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/router";
+import { useState } from "react";
+import LocationAutocomplete from "../components/LocationAutocomplete";
 
 const countryCodes = [
   { label: "🇺🇸 +1", value: "+1" },
@@ -28,19 +28,7 @@ export default function Reports() {
   const [customCode, setCustomCode] = useState("");
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [isTestData, setIsTestData] = useState(false);
-
-  // Geolocation on mount
-  useEffect(() => {
-    navigator.geolocation?.getCurrentPosition(
-      (pos) => {
-        setLatitude(pos.coords.latitude);
-        setLongitude(pos.coords.longitude);
-      },
-      (err) => setError(err.message)
-    );
-  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -81,12 +69,13 @@ export default function Reports() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Submission failed");
 
-     router.push(
-       `/report-confirmation?reportId=${data.report_id}` +
-         `&location=${encodeURIComponent(location)}` +
-         `&issue=${encodeURIComponent(categoryNeed)}` +
-         `&mode=${isTestData ? "test" : "real"}`
-     );   } catch (err) {
+      router.push(
+        `/report-confirmation?reportId=${data.report_id}` +
+          `&location=${encodeURIComponent(location)}` +
+          `&issue=${encodeURIComponent(categoryNeed)}` +
+          `&mode=${isTestData ? "test" : "real"}`,
+      );
+    } catch (err) {
       console.error(err);
       alert(err.message || "Failed to submit report.");
     } finally {
@@ -99,7 +88,7 @@ export default function Reports() {
     let formatted = input;
     if (input.length > 6) {
       formatted = `(${input.slice(0, 3)}) ${input.slice(3, 6)}-${input.slice(
-        6
+        6,
       )}`;
     } else if (input.length > 3) {
       formatted = `(${input.slice(0, 3)}) ${input.slice(3)}`;
@@ -216,7 +205,7 @@ export default function Reports() {
                               value={customCode}
                               onChange={(e) =>
                                 setCustomCode(
-                                  e.target.value.replace(/[^\d+]/g, "")
+                                  e.target.value.replace(/[^\d+]/g, ""),
                                 )
                               }
                               placeholder="+__"
@@ -325,8 +314,6 @@ export default function Reports() {
               </div>
             </div>
           </div>
-
-          {error && <p className="text-red-500 text-center mt-4">{error}</p>}
         </div>
       </div>
     </div>
