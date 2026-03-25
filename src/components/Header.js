@@ -31,6 +31,7 @@ function Header() {
               width={140}
               height={140}
             />
+            
           </Link>
 
           {/* Nav Links - Center */}
