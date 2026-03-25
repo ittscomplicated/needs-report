@@ -21,22 +21,21 @@ function Header() {
       </div>
 
       <nav className="bg-[#C3CD00] shadow-md px-4 py-3">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          {/* Logo - Left Side */}
-          <div className="flex-shrink-0 w-[140px]">
-            <Link href="/">
-              <img
-                src="/images/needsTransparent.png"
-                alt="Needs Report Logo"
-                className="h-10 object-contain"
-                width={140}
-                height={140}
-              />
-            </Link>
-          </div>
+        <div className="max-w-6xl mx-auto grid grid-cols-[auto_1fr_auto] items-center gap-2">
+          {/* Logo - Left */}
+          <Link href="/">
+            <img
+              src="/images/needsTransparent.png"
+              alt="Needs Report Logo"
+              className="h-8 md:h-10 object-contain w-[100px] md:w-[140px]"
+              width={140}
+              height={140}
+            />
+            
+          </Link>
 
-          {/* Nav Links - Center (always centered) */}
-          <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center space-x-4 text-base font-medium text-gray-700">
+          {/* Nav Links - Center */}
+          <div className="flex items-center justify-center gap-3 md:gap-4 text-sm md:text-base font-medium text-gray-700">
             <Link href="/about" className="hover:text-blue-600 transition">
               About
             </Link>
@@ -46,12 +45,12 @@ function Header() {
             </Link>
           </div>
 
-          {/* Button - Right Side (takes up same space whether visible or not) */}
-          <div className="flex-shrink-0 w-[140px] flex justify-end">
+          {/* Button - Right */}
+          <div className="flex justify-end">
             {showCreateButton && (
               <Link
                 href="/reports"
-                className="bg-[#064E65] text-white px-4 py-2 rounded-full text-base font-semibold hover:bg-[#043B4D] transition whitespace-nowrap"
+                className="bg-[#064E65] text-white px-3 py-1.5 md:px-4 md:py-2 rounded-full text-sm md:text-base font-semibold hover:bg-[#043B4D] transition whitespace-nowrap"
               >
                 Create Report
               </Link>
