@@ -2,8 +2,6 @@ import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
 import loader from "../utils/googleMapsLoader";
 
-let mapClickListener;
-
 const categoryColors = {
   education: "#F2C14E",
   energy: "#FF8C42",
