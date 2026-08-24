@@ -96,8 +96,7 @@ return (
           onClick={scrollToHowItWorks}
           className="absolute bottom-20 left-0 right-0 mx-auto w-fit flex flex-col items-center gap-1 text-[#004989] hover:opacity-80 transition animate-bounce"
         >
-          <span className="text-base font-bold tracking-wide bg-[#de9571] bg-opacity-70 px-4 py-1 rounded-full">
-            Learn More
+          <span className="text-base font-bold tracking-wide  bg-opacity-70 px-4 py-1 rounded-full">
           </span>
           <svg
             xmlns="http://www.w3.org/2000/svg"
