@@ -15,10 +15,6 @@ function Header() {
 
   return (
     <>
-      {/* Top Banner */}
-      <div className="bg-red-600 text-white text-center py-2 text-xs md:text-sm font-semibold">
-        Site Still Under Construction, Please Excuse the Mess :)
-      </div>
 
       <nav className="bg-[#C3CD00] shadow-md px-4 py-3">
         <div className="max-w-6xl mx-auto grid grid-cols-[auto_1fr_auto] items-center gap-2">
