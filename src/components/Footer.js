@@ -19,7 +19,7 @@ function Footer() {
 
       <p className="text-xlg tracking-wide">
         <span className="font-semibold">Needs Report</span> is a project of
-        EmpowermentWORKS 501(c)3.
+        EmpowermentWORKS 501(c)(3).
       </p>
     </footer>
   );
