@@ -83,7 +83,7 @@ export default function HomePage() {
               href="/reports"
               className="bg-[#064E65] text-white px-4 py-2 rounded-full text-base font-semibold hover:bg-[#043B4D] transition"
             >
-              Create Report
+              Submit Report
             </Link>
           </div>
 

@@ -14,6 +14,7 @@ export default function ReportConfirmation() {
   const [reportCount, setReportCount] = useState(null);
 
   useEffect(() => {
+    console.log("Query params:", { location, issue, reportId });
     async function fetchReportCount() {
       if (location && issue) {
         try {
@@ -71,7 +72,7 @@ export default function ReportConfirmation() {
               </>
             ) : (
               <>
-                <span className="font-semibold">{reportCount + 1}</span> people
+                <span className="font-semibold">{reportCount}</span> people
                 have also reported about this in your area.
               </>
             )}

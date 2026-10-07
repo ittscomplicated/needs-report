@@ -48,7 +48,7 @@ function Header() {
                 href="/reports"
                 className="bg-[#064E65] text-white px-3 py-1.5 md:px-4 md:py-2 rounded-full text-sm md:text-base font-semibold hover:bg-[#043B4D] transition whitespace-nowrap"
               >
-                Create Report
+                Submit Report
               </Link>
             )}
           </div>
