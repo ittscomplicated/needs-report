@@ -12,16 +12,14 @@ const slides = [
 See something your community needs? Whether it’s a broken streetlight, limited access to fresh food, healthcare gaps, we want to hear from you.
 
 
-You can share your report right here on the site, or simply text us. Your voice matters.
+You can share your report right here on the site. Your voice matters.
     `,
     image: "/images/share.svg",
   },
   {
-    title: "2. Submit Online or Text Us",
+    title: "2. Submit Online",
     description: `
-**Online:** Click 'Create Report' at the top right. Fill out the short form and hit submit.
-
-**By Text:** Send a message to [phone number] starting with a category (like: “Food”) and a brief description.
+**Online:** Click 'Submit Report' at the top right. Fill out the short form and hit submit.
 
 _Example: “Food: Our local store ran out of produce again this week.”_
     `,
