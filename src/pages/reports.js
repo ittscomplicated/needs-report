@@ -38,6 +38,12 @@ export default function Reports() {
     if (!location) return alert("Please select a location.");
     if (!categoryNeed) return alert("Please select a category.");
 
+    if (!latitude || !longitude) {
+      return alert(
+        "Please select a location from the dropdown suggestions — typing alone won't capture coordinates.",
+      );
+    }
+    
     if (!isAnonymous) {
       if (!name.trim()) return alert("Please enter your name.");
       if (!email.trim()) return alert("Please enter your email.");

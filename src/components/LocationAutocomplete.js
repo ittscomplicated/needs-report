@@ -20,7 +20,7 @@ export default function LocationAutocomplete({
           inputRef.current,
           {
             types: ["geocode"],
-          }
+          },
         );
 
         autocomplete.addListener("place_changed", () => {
@@ -50,6 +50,9 @@ export default function LocationAutocomplete({
   const handleManualInput = (e) => {
     const value = e.target.value;
     setLocation(value);
+
+    setLatitude("");
+    setLongitude("");
 
     // Try to parse coordinates (simple pattern)
     const coordMatch = value.match(/(-?\d+(\.\d+)?),\s*(-?\d+(\.\d+)?)/);
