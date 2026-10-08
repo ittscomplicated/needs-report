@@ -65,15 +65,16 @@ export default function ReportConfirmation() {
 
         {reportCount !== null && (
           <p className="text-sm text-[#064E65] italic">
-            {reportCount === 0 ? (
+            {reportCount === 1 ? (
               <>
                 You are the <span className="font-semibold">first</span> person
                 to report about this in your area.
               </>
             ) : (
               <>
-                <span className="font-semibold">{reportCount}</span> people
-                have also reported about this in your area.
+                <span className="font-semibold">{reportCount - 1}</span> other
+                {reportCount - 1 === 1 ? "" : "s"} have also reported about this
+                in your area.
               </>
             )}
           </p>
